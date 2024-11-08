@@ -15,7 +15,7 @@ function App() {
     latitude: 19.15705,
     zoom: 2,
   });
-  const toggleZoom = () => {
+  const recenter = () => {
     setViewState({
       ...viewstate,
       zoom: 2,
@@ -55,7 +55,7 @@ function App() {
         earthquakes={earthquakes}
         filters={{ magnitudeFilter, depthFilter, significanceFilter }}
       />
-      <Footer toggleZoom={toggleZoom} />
+      <Footer recenter={recenter} />
       <Drawer
         open={drawer}
         onOpenChange={setDrawer}
