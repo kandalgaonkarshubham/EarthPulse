@@ -11,6 +11,7 @@ export default function Map() {
   const {
     viewstate,
     // updateViewState,
+    earthquakes,
     magnitudeFilter,
     magnitudeTypeFilter,
     significanceFilter,
@@ -18,11 +19,10 @@ export default function Map() {
     statusFilter,
     alertFilter,
     getFilteredData,
+    resetMap,
   } = useFilterContext();
 
-  const [filteredEarthquakes, setFilteredEarthquakes] = useState(
-    getFilteredData()
-  );
+  const [filteredEarthquakes, setFilteredEarthquakes] = useState(earthquakes);
 
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -195,19 +195,18 @@ export default function Map() {
   }, []);
 
   useEffect(() => {
-    console.log("rerendering map");
-    if (mapRef.current && mapRef.current.getSource("earthquakes")) {
-      mapRef.current.getSource("earthquakes").setData({
-        type: "FeatureCollection",
-        features: filteredEarthquakes,
-      });
+    if (
+      magnitudeFilter != null ||
+      magnitudeTypeFilter != null ||
+      significanceFilter != null ||
+      tsunamiFilter != null ||
+      statusFilter != null ||
+      alertFilter != null ||
+      resetMap
+    ) {
+      const refilteredData = getFilteredData();
+      setFilteredEarthquakes(refilteredData);
     }
-  }, [filteredEarthquakes]);
-
-  useEffect(() => {
-    console.log("filters changed");
-    const reFilteredData = getFilteredData();
-    setFilteredEarthquakes(reFilteredData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     magnitudeFilter,
@@ -216,7 +215,17 @@ export default function Map() {
     tsunamiFilter,
     statusFilter,
     alertFilter,
+    resetMap,
   ]);
+
+  useEffect(() => {
+    if (mapRef.current && mapRef.current.getSource("earthquakes")) {
+      mapRef.current.getSource("earthquakes").setData({
+        type: "FeatureCollection",
+        features: filteredEarthquakes,
+      });
+    }
+  }, [filteredEarthquakes]);
 
   return (
     <div className="w-full h-full rounded-lg">

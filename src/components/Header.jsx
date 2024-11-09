@@ -14,7 +14,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+import { useFilterContext } from "@/context/Filter";
+
 export default function Header({ toggleDrawer, fetchedTime }) {
+  const { filterCount, resetMap } = useFilterContext();
   return (
     <div className="absolute top-0 w-full flex items-start justify-between bg-secondary/10 border-b border-b-secondary backdrop-blur-lg px-4 pt-4 -ms-4 z-50">
       <div className="flex flex-col gap-4 text-white">
@@ -28,7 +31,11 @@ export default function Header({ toggleDrawer, fetchedTime }) {
           <p className="text-xl font-Syne">EarthPulse</p>
         </div>
         <div className="flex flex-col gap-2 mb-2">
-          <p className="text-3xl font-bold">0 Matching Events</p>
+          {filterCount != null && (
+            <p className="text-3xl font-bold">
+              <span>{filterCount}</span> Matching Events
+            </p>
+          )}
           <p className="flex items-center text-sm font-medium gap-1">
             Last fetched on <time className="font-bold">{fetchedTime}</time>{" "}
             <RefreshCcwIcon size={14} />

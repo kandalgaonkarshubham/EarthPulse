@@ -29,45 +29,66 @@ export const FilterProvider = ({ children }) => {
   const [tsunamiFilter, setTsunamiFilter] = useState(null);
   const [statusFilter, setStatusFilter] = useState(null);
   const [alertFilter, setAlertFilter] = useState(null);
+  const [filterCount, setFilterCount] = useState(null);
+  const [resetMap, setResetMap] = useState(null);
 
   const getFilteredData = () => {
-    return earthquakes.filter((quake) => {
-      const { mag, sig, tsunami, status, alert } = quake.properties;
+    const filteredData = earthquakes.filter((quake) => {
+      const { mag, magType, sig, tsunami, status, alert } = quake.properties;
+
+      const magnitude = parseFloat(mag);
+      const magnitudeMatches =
+        magnitudeFilter === null ||
+        (magnitudeFilter == "0"
+          ? magnitude <= 0
+          : magnitude >= parseFloat(magnitudeFilter) &&
+            magnitude <= parseFloat(magnitudeFilter) + 1);
+
+      const significance = parseInt(sig, 10);
+      const significanceMatches =
+        significanceFilter === null ||
+        (() => {
+          const [minSignificance, maxSignificance] = significanceFilter
+            .split("-")
+            .map(Number);
+          return (
+            significance >= minSignificance && significance <= maxSignificance
+          );
+        })();
+
       return (
-        (magnitudeFilter === null || mag >= magnitudeFilter) &&
-        (significanceFilter === null || sig >= significanceFilter) &&
-        (tsunamiFilter === null || tsunami === tsunamiFilter) &&
-        (statusFilter === null || status === statusFilter) &&
-        (alertFilter === null || alert === alertFilter)
+        magnitudeMatches &&
+        (magnitudeTypeFilter === null || magType == magnitudeTypeFilter) &&
+        significanceMatches &&
+        (tsunamiFilter === null || tsunami == tsunamiFilter) &&
+        (statusFilter === null || status == statusFilter) &&
+        (alertFilter === null || alert == alertFilter)
       );
     });
+    if (
+      magnitudeFilter != null ||
+      magnitudeTypeFilter != null ||
+      significanceFilter != null ||
+      tsunamiFilter != null ||
+      statusFilter != null ||
+      alertFilter != null
+    ) {
+      setFilterCount(filteredData.length);
+    }
+    setResetMap(true);
+    return filteredData;
   };
 
-  function logUniqueFilterValues() {
-    const data = earthquakes;
-    const uniqueMagnitudes = new Set();
-    const uniqueMagnitudeTypes = new Set();
-    const uniqueSignificances = new Set();
-    const uniqueTsunamis = new Set();
-    const uniqueStatuses = new Set();
-    const uniqueAlerts = new Set();
-
-    data.forEach((quake) => {
-      uniqueMagnitudes.add(quake.properties.mag);
-      uniqueMagnitudeTypes.add(quake.properties.magType);
-      uniqueSignificances.add(quake.properties.sig);
-      uniqueTsunamis.add(quake.properties.tsunami);
-      uniqueStatuses.add(quake.properties.status);
-      uniqueAlerts.add(quake.properties.alert);
-    });
-
-    console.log("Unique Magnitudes:", Array.from(uniqueMagnitudes));
-    console.log("Unique Magnitude Types:", Array.from(uniqueMagnitudeTypes));
-    console.log("Unique Significances:", Array.from(uniqueSignificances));
-    console.log("Unique Tsunami Flags:", Array.from(uniqueTsunamis));
-    console.log("Unique Statuses:", Array.from(uniqueStatuses));
-    console.log("Unique Alerts:", Array.from(uniqueAlerts));
-  }
+  const resetFilters = () => {
+    setMagnitudeFilter(null);
+    setMagnitudeTypeFilter(null);
+    setSignificanceFilter(null);
+    setTsunamiFilter(null);
+    setStatusFilter(null);
+    setAlertFilter(null);
+    setFilterCount(null);
+    setResetMap(true);
+  };
 
   return (
     <FilterContext.Provider
@@ -89,8 +110,10 @@ export const FilterProvider = ({ children }) => {
         setStatusFilter,
         alertFilter,
         setAlertFilter,
+        filterCount,
         getFilteredData,
-        logUniqueFilterValues,
+        resetFilters,
+        resetMap,
       }}
     >
       {children}
