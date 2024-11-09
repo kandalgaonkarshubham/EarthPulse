@@ -16,8 +16,8 @@ import {
 
 import { useFilterContext } from "@/context/Filter";
 
-export default function Header({ toggleDrawer, fetchedTime }) {
-  const { filterCount, resetMap } = useFilterContext();
+export default function Header({ toggleDrawer, fetchedTime, handleRefetch }) {
+  const { filterCount } = useFilterContext();
   return (
     <div className="absolute top-0 w-full flex items-start justify-between bg-secondary/10 border-b border-b-secondary backdrop-blur-lg px-4 pt-4 -ms-4 z-50">
       <div className="flex flex-col gap-4 text-white">
@@ -38,7 +38,11 @@ export default function Header({ toggleDrawer, fetchedTime }) {
           )}
           <p className="flex items-center text-sm font-medium gap-1">
             Last fetched on <time className="font-bold">{fetchedTime}</time>{" "}
-            <RefreshCcwIcon size={14} />
+            <RefreshCcwIcon
+              size={14}
+              onClick={handleRefetch}
+              className="cursor-pointer"
+            />
           </p>
         </div>
       </div>
