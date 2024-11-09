@@ -1,5 +1,3 @@
-/* eslint-disable react/prop-types */
-
 import { useEffect, useRef, useState } from "react";
 
 import mapboxgl from "mapbox-gl";
@@ -7,28 +5,28 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import EQModal from "./EQModal";
 
-export default function Map({
-  viewstate,
-  updateViewState,
-  earthquakes,
-  filters,
-}) {
-  const { magnitudeFilter, depthFilter, significanceFilter } = filters;
+import { useFilterContext } from "@/context/Filter";
 
-  const filteredEarthquakes = earthquakes.filter((quake) => {
-    const mag = quake.properties.mag;
-    const depth = quake.geometry.coordinates[2];
-    const significance = quake.properties.sig;
-    return (
-      mag >= magnitudeFilter &&
-      depth >= depthFilter[0] &&
-      depth <= depthFilter[1] &&
-      significance >= significanceFilter
-    );
-  });
+export default function Map() {
+  const {
+    viewstate,
+    // updateViewState,
+    magnitudeFilter,
+    magnitudeTypeFilter,
+    significanceFilter,
+    tsunamiFilter,
+    statusFilter,
+    alertFilter,
+    getFilteredData,
+  } = useFilterContext();
+
+  const [filteredEarthquakes, setFilteredEarthquakes] = useState(
+    getFilteredData()
+  );
 
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
+
   const [selectedEarthquake, setSelectedEarthquake] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const handleModalChange = (e) => setIsModalOpen(e);
@@ -130,28 +128,6 @@ export default function Map({
           "circle-opacity": 0.7,
         },
       });
-      // mapRef.current.loadImage(
-      //   "https://docs.mapbox.com/mapbox-gl-js/assets/cat.png",
-      //   (error, image) => {
-      //     if (error) throw error;
-      //     mapRef.current.addImage("eqicon", image);
-      //     mapRef.current.addLayer({
-      //       id: "unclustered-point-icon",
-      //       type: "symbol",
-      //       source: "earthquakes",
-      //       filter: ["!", ["has", "point_count"]],
-      //       layout: {
-      //         "icon-image": [
-      //           "case",
-      //           ["==", ["get", "tsunami"], 1], // Check if tsunami property is 1
-      //           "tsunami-icon", // Use tsunami icon if tsunami
-      //           "eqicon", // Otherwise, use earthquake icon
-      //         ],
-      //         "icon-size": 0.05,
-      //       },
-      //     });
-      //   }
-      // );
 
       mapRef.current.on("click", "clusters", (e) => {
         const features = mapRef.current.queryRenderedFeatures(e.point, {
@@ -175,10 +151,28 @@ export default function Map({
           center: coordinates,
           zoom: 8,
         });
+
         mapRef.current.once("moveend", () => {
+          const popup = new mapboxgl.Popup({
+            offset: 25,
+            closeButton: false,
+            closeOnMove: true,
+            className: "eq-popup",
+          })
+            .setLngLat(coordinates)
+            .setHTML(
+              ` <h3>${earthquake.properties.title}</h3>
+                <p><span>Magnitude:</span> ${earthquake.properties.mag}</p>
+                <p><span>Location:</span> ${earthquake.properties.place}</p>
+                <p class="readmore">Read More...</p>
+              `
+            )
+            .addTo(mapRef.current);
+
           setSelectedEarthquake(earthquake);
-          handleModalChange(true);
-          console.log(earthquake.properties)
+          popup.getElement().addEventListener("click", () => {
+            handleModalChange(true);
+          });
         });
       });
 
@@ -191,16 +185,17 @@ export default function Map({
       mapRef.current.on("mouseleave", "clusters", () => {
         mapRef.current.getCanvas().style.cursor = "";
       });
-      mapRef.current.on("moveend", () => {
-        const lngLat = mapRef.current.getCenter();
-        const zoom = mapRef.current.getZoom();
-        updateViewState(lngLat, zoom);
-      });
+      // mapRef.current.on("moveend", () => {
+      //   const lngLat = mapRef.current.getCenter();
+      //   const zoom = mapRef.current.getZoom();
+      //   updateViewState(lngLat, zoom);
+      // });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    console.log("rerendering map");
     if (mapRef.current && mapRef.current.getSource("earthquakes")) {
       mapRef.current.getSource("earthquakes").setData({
         type: "FeatureCollection",
@@ -209,12 +204,26 @@ export default function Map({
     }
   }, [filteredEarthquakes]);
 
+  useEffect(() => {
+    console.log("filters changed");
+    const reFilteredData = getFilteredData();
+    setFilteredEarthquakes(reFilteredData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    magnitudeFilter,
+    magnitudeTypeFilter,
+    significanceFilter,
+    tsunamiFilter,
+    statusFilter,
+    alertFilter,
+  ]);
+
   return (
-    <div className="w-full h-full rounded-lg pt-14">
+    <div className="w-full h-full rounded-lg">
       <div ref={mapContainerRef} style={{ width: "100%", height: "100%" }} />
       {selectedEarthquake && isModalOpen && (
         <EQModal
-          selectedEarthquake={selectedEarthquake}
+          quake={selectedEarthquake}
           isModalOpen={isModalOpen}
           handleModalChange={handleModalChange}
         />

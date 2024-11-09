@@ -5,35 +5,23 @@ import Footer from "@/components/Footer";
 import Map from "@/components/Map";
 
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import { useFilterContext } from "@/context/Filter";
 
 function App() {
+  const { earthquakes, setEarthquakes } = useFilterContext();
+
   const [drawer, setDrawer] = useState(false);
   const toggleDrawer = () => setDrawer(!drawer);
 
-  const [viewstate, setViewState] = useState({
-    longitude: 73.22969,
-    latitude: 19.15705,
-    zoom: 2,
-  });
-  const recenter = () => {
-    setViewState({
-      ...viewstate,
-      zoom: 2,
-    });
-  };
-  const updateViewState = (l, z) => {
-    setViewState({
-      longitude: l.lng,
-      latitude: l.lat,
-      zoom: z,
-    });
-  };
-
-  const [earthquakes, setEarthquakes] = useState([]);
-  const [magnitudeFilter, setMagnitudeFilter] = useState(0); // Minimum magnitude filter
-  const [timeFilter, setTimeFilter] = useState("day"); // Options: "hour", "day", "week", etc.
-  const [depthFilter, setDepthFilter] = useState([0, 700]); // Depth range (e.g., shallow to deep)
-  const [significanceFilter, setSignificanceFilter] = useState(0); // Minimum significance
+  const [fetchedTime, setFetchedTime] = useState(" ");
 
   useEffect(() => {
     const fetchEarthquakeData = async () => {
@@ -44,26 +32,117 @@ function App() {
       setEarthquakes(data.features);
     };
     fetchEarthquakeData();
-  }, [timeFilter]);
+    setFetchedTime(
+      new Date().toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+      })
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="h-screen flex flex-col items-start p-4">
-      <Header toggleDrawer={toggleDrawer} />
-      <Map
-        viewstate={viewstate}
-        updateViewState={updateViewState}
-        earthquakes={earthquakes}
-        filters={{ magnitudeFilter, depthFilter, significanceFilter }}
-      />
-      <Footer recenter={recenter} />
+      <Header toggleDrawer={toggleDrawer} fetchedTime={fetchedTime} />
+      {earthquakes.length != 0 && <Map />}
+      <Footer />
       <Drawer
         open={drawer}
         onOpenChange={setDrawer}
         direction="right"
         className="flex flex-col align-center justify-center"
       >
-        <DrawerContent className="absolute top-[1%] right-[1%] max-w-[40vw] h-[98vh] after:!w-0">
-          <div className="m-4 bg-red-100">draser</div>
+        <DrawerContent className="absolute top-[1%] right-[1%] mmax-w-[40vw] h-[98vh] bg-secondary text-white after:!w-0">
+          <div className="w-full h-full flex flex-col gap-2 mx-6 mr-10 my-4">
+            <h4 className="text-start text-3xl font-Syne my-8">Filters</h4>
+
+            <div className="flex items-center gap-10">
+              <div className="flex items-center gap-2">
+                <p className="font-Syne">Magnitude </p>
+                <Select>
+                  <SelectTrigger className="max-w-[180px]">
+                    <SelectValue placeholder="Any" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <p className="font-Syne">Type </p>
+                <Select>
+                  <SelectTrigger className="max-w-[180px]">
+                    <SelectValue placeholder="Any" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <hr className="border-neutral-700 mt-6 mb-4" />
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-Syne">Significance </p>
+              <Select>
+                <SelectTrigger className="max-w-[180px]">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="light">Light</SelectItem>
+                  <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem value="system">System</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <hr className="border-neutral-700 mt-6 mb-4" />
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-Syne">Tsunami </p>
+              <Select>
+                <SelectTrigger className="max-w-[180px]">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="light">Light</SelectItem>
+                  <SelectItem value="dark">Dark</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <hr className="border-neutral-700 mt-6 mb-4" />
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-Syne">Status </p>
+              <Select>
+                <SelectTrigger className="max-w-[180px]">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">0</SelectItem>
+                  <SelectItem value="1">1</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <hr className="border-neutral-700 mt-6 mb-4" />
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-Syne">Alert </p>
+              <Select>
+                <SelectTrigger className="max-w-[180px]">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="light">Light</SelectItem>
+                  <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem value="system">System</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <button className="border border-neutral-600 font-Syne rounded-lg p-2 mt-8">
+              Reset FIlters
+            </button>
+          </div>
         </DrawerContent>
       </Drawer>
     </div>

@@ -33,12 +33,12 @@ const DrawerContent = React.forwardRef(
       <DrawerPrimitive.Content
         ref={ref}
         className={cn(
-          "fixed right-0 bottom-0 z-50 flex h-auto flex-row items-center rounded-[10px] bg-white border border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950",
+          "fixed right-0 bottom-0 z-50 flex h-auto flex-row items-center rounded-[10px] border border-neutral-800",
           className
         )}
         {...props}
       >
-        <div className="ms-2 mt-4 h-[100px] w-2 rounded-full bg-neutral-200" />
+        <div className="ms-2 mt-4 h-[30%] w-2 rounded-full bg-neutral-700 opacity-0 hover:opacity-100 transition-opacity duration-300" />
         {children}
       </DrawerPrimitive.Content>
     </DrawerPortal>

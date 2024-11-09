@@ -1,4 +1,9 @@
-import { ChartNoAxesGanttIcon, BadgeInfoIcon, XIcon } from "lucide-react";
+import {
+  ChartNoAxesGanttIcon,
+  BadgeInfoIcon,
+  XIcon,
+  RefreshCcwIcon,
+} from "lucide-react";
 
 import {
   AlertDialog,
@@ -9,7 +14,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export default function Header({ toggleDrawer }) {
+export default function Header({ toggleDrawer, fetchedTime }) {
   return (
     <div className="absolute top-0 w-full flex items-start justify-between bg-secondary/10 border-b border-b-secondary backdrop-blur-lg px-4 pt-4 -ms-4 z-50">
       <div className="flex flex-col gap-4 text-white">
@@ -23,8 +28,11 @@ export default function Header({ toggleDrawer }) {
           <p className="text-xl font-Syne">EarthPulse</p>
         </div>
         <div className="flex flex-col gap-2 mb-2">
-          <p className="text-4xl font-bold">Shipment #4512</p>
-          <p className="text-sm font-medium">Completed on 12/34/5001 4:22pm</p>
+          <p className="text-3xl font-bold">0 Matching Events</p>
+          <p className="flex items-center text-sm font-medium gap-1">
+            Last fetched on <time className="font-bold">{fetchedTime}</time>{" "}
+            <RefreshCcwIcon size={14} />
+          </p>
         </div>
       </div>
       <AlertDialog>
@@ -74,7 +82,6 @@ export default function Header({ toggleDrawer }) {
                   </span>
                 </li>
               </ul>
-              <hr className="border-secondary mb-2" />
             </div>
           </AlertDialogHeader>
         </AlertDialogContent>
