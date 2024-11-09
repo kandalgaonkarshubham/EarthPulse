@@ -110,13 +110,13 @@ export default function EQModal({ quake, isModalOpen, handleModalChange }) {
 
   return (
     <AlertDialog open={isModalOpen} onOpenChange={handleModalChange}>
-      <AlertDialogContent className="w-fit bg-primary border-secondary text-white">
-        <AlertDialogHeader>
+      <AlertDialogContent className="w-fit bg-primary border-secondary text-white max-[847px]:max-h-[90vh] max-[847px]:!overflow-scroll">
+        <AlertDialogHeader className="overflow-x-scroll">
           <AlertDialogTitle className="underline mb-2">
             {quake.properties.title}
           </AlertDialogTitle>
           <div className="flex flex-col items-start justify-center p-1">
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 overflow-x-scroll whitespace-nowrap">
               {groupedData.identifiers.map((item, index) => (
                 <InfoPopover
                   key={index}
