@@ -3,25 +3,6 @@ import { createContext, useContext, useState } from "react";
 const FilterContext = createContext();
 
 export const FilterProvider = ({ children }) => {
-  const [viewstate, setViewState] = useState({
-    longitude: 73.22969,
-    latitude: 19.15705,
-    zoom: 2,
-  });
-  const updateViewState = (l, z) => {
-    setViewState({
-      longitude: l.lng,
-      latitude: l.lat,
-      zoom: z,
-    });
-  };
-  const recenter = () => {
-    setViewState({
-      ...viewstate,
-      zoom: 2,
-    });
-  };
-
   const [earthquakes, setEarthquakes] = useState([]);
   const [magnitudeFilter, setMagnitudeFilter] = useState(null);
   const [magnitudeTypeFilter, setMagnitudeTypeFilter] = useState(null);
@@ -95,9 +76,6 @@ export const FilterProvider = ({ children }) => {
       value={{
         earthquakes,
         setEarthquakes,
-        viewstate,
-        updateViewState,
-        recenter,
         magnitudeFilter,
         setMagnitudeFilter,
         magnitudeTypeFilter,

@@ -9,8 +9,6 @@ import { useFilterContext } from "@/context/Filter";
 
 export default function Map() {
   const {
-    viewstate,
-    // updateViewState,
     earthquakes,
     magnitudeFilter,
     magnitudeTypeFilter,
@@ -37,8 +35,8 @@ export default function Map() {
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [viewstate.longitude, viewstate.latitude],
-      zoom: viewstate.zoom,
+      center: [73.22969, 19.15705],
+      zoom: 2,
       accessToken: import.meta.env.VITE_MAPBOX_KEY,
     });
 
@@ -185,11 +183,6 @@ export default function Map() {
       mapRef.current.on("mouseleave", "clusters", () => {
         mapRef.current.getCanvas().style.cursor = "";
       });
-      // mapRef.current.on("moveend", () => {
-      //   const lngLat = mapRef.current.getCenter();
-      //   const zoom = mapRef.current.getZoom();
-      //   updateViewState(lngLat, zoom);
-      // });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
