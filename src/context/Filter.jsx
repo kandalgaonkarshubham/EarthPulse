@@ -76,6 +76,8 @@ export const FilterProvider = ({ children }) => {
       value={{
         earthquakes,
         setEarthquakes,
+        magnitude: magnitudeFilter,
+        setMagnitude: setMagnitudeFilter,
         magnitudeFilter,
         setMagnitudeFilter,
         magnitudeTypeFilter,

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import EQModal from "./EQModal";
+import FuturisticModal from "./FuturisticModal";
 
 import { useFilterContext } from "@/context/Filter";
 
@@ -221,13 +221,13 @@ export default function Map() {
   }, [filteredEarthquakes]);
 
   return (
-    <div className="w-full h-full rounded-lg">
+    <div className="w-full h-full">
       <div ref={mapContainerRef} style={{ width: "100%", height: "100%" }} />
-      {selectedEarthquake && isModalOpen && (
-        <EQModal
-          quake={selectedEarthquake}
-          isModalOpen={isModalOpen}
-          handleModalChange={handleModalChange}
+      {selectedEarthquake && (
+        <FuturisticModal
+          isOpen={isModalOpen}
+          onClose={() => handleModalChange(false)}
+          earthquake={selectedEarthquake}
         />
       )}
     </div>

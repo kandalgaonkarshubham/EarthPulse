@@ -4,21 +4,19 @@ import Header from "@/components/Header";
 import Loader from "@/components/Loader";
 import Error from "@/components/Error";
 import Map from "@/components/Map";
+import SideFilterPanel from "@/components/SideFilterPanel";
+import CornerInfo from "@/components/CornerInfo";
 
 import { useFilterContext } from "@/context/Filter";
-import FilterDrawer from "./components/FilterDrawer";
 
 function App() {
   const { earthquakes, setEarthquakes } = useFilterContext();
 
-  const [drawer, setDrawer] = useState(false);
-  const toggleDrawer = () => setDrawer(!drawer);
-
   const [fetchedTime, setFetchedTime] = useState(" ");
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refetch, setRefetch] = useState(false);
+
   const handleRefetch = () => {
     setRefetch(!refetch);
   };
@@ -59,20 +57,31 @@ function App() {
   }, [refetch]);
 
   return (
-    <div className="h-screen flex flex-col items-start p-4">
+    <div className="h-screen w-screen overflow-hidden bg-gradient-futuristic relative">
+      {/* Header */}
       <Header
-        toggleDrawer={toggleDrawer}
         fetchedTime={fetchedTime}
         handleRefetch={handleRefetch}
       />
+
+      {/* Main Content */}
       {loading ? (
         <Loader />
       ) : earthquakes.length != 0 ? (
-        <Map />
+        <>
+          {/* Map */}
+          <Map />
+
+          {/* Side Panels */}
+          <SideFilterPanel side="left" />
+          <SideFilterPanel side="right" />
+
+          {/* Corner Info Displays */}
+          <CornerInfo />
+        </>
       ) : (
         <Error error={error} />
       )}
-      <FilterDrawer drawer={drawer} toggleDrawer={toggleDrawer} />
     </div>
   );
 }

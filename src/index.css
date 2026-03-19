@@ -4,15 +4,138 @@
 @tailwind components;
 @tailwind utilities;
 
-
 body,
 #root {
   min-height: 100vh;
 }
 
 body {
-  background: #000000;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
   font-family: "Quicksand", sans-serif;
+  color: #ffffff;
+}
+
+/* Futuristic curved panel styles */
+.curved-panel {
+  position: relative;
+  background: rgba(26, 31, 58, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 20px;
+}
+
+.curved-line {
+  position: absolute;
+  background: linear-gradient(180deg, transparent, rgba(0, 212, 255, 0.4), transparent);
+  width: 2px;
+}
+
+.panel-item {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.panel-item::before {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #00d4ff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.panel-item:hover::before {
+  opacity: 1;
+}
+
+.filter-chip {
+  padding: 8px 16px;
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.filter-chip:hover {
+  background: rgba(139, 92, 246, 0.4);
+  border-color: rgba(139, 92, 246, 0.8);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.6);
+}
+
+.filter-chip.active {
+  background: rgba(0, 212, 255, 0.3);
+  border-color: rgba(0, 212, 255, 0.8);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
+  color: #00d4ff;
+}
+
+.corner-info {
+  position: fixed;
+  background: rgba(26, 31, 58, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  border-radius: 12px;
+  padding: 12px 16px;
+  min-width: 160px;
+  font-family: 'Jetbrains Mono', monospace;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  z-index: 30;
+}
+
+.corner-info-label {
+  color: #00d4ff;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.corner-info-value {
+  color: #ffd60a;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.futuristic-modal {
+  background: rgba(26, 31, 58, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 212, 255, 0.2);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(26, 31, 58, 0.5);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.6);
+}
+
+/* Smooth transitions */
+input[type="date"] {
+  background: rgba(10, 14, 39, 0.8);
+  color: #00d4ff;
+}
+
+input[type="date"]:focus {
+  outline: none;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
 }
 
 @layer base {
