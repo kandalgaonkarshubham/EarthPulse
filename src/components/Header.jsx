@@ -1,5 +1,4 @@
 import {
-  ChartNoAxesGanttIcon,
   BadgeInfoIcon,
   XIcon,
   RefreshCcwIcon,
@@ -14,89 +13,64 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-import { useFilterContext } from "@/context/Filter";
-
-export default function Header({ toggleDrawer, fetchedTime, handleRefetch }) {
-  const { filterCount } = useFilterContext();
+export default function Header({ fetchedTime, handleRefetch }) {
   return (
-    <div className="absolute top-0 w-full flex items-start justify-between bg-secondary/10 border-b border-b-secondary backdrop-blur-lg px-4 pt-4 -ms-4 z-50">
-      <div className="flex flex-col gap-4 text-white">
-        <div className="flex items-center gap-3">
-          <button
-            className="border border-neutral-200 text-white rounded-lg p-1"
-            onClick={toggleDrawer}
-          >
-            <ChartNoAxesGanttIcon />
-          </button>
-          <p className="text-xl font-Syne">EarthPulse</p>
-        </div>
-        <div className="flex flex-col gap-2 mb-2">
-          {filterCount != null && (
-            <p className="text-3xl font-bold">
-              <span>{filterCount}</span> Matching Events
-            </p>
-          )}
-          <p className="flex items-center text-sm font-medium gap-1">
-            Last fetched on <time className="font-bold">{fetchedTime}</time>{" "}
-            <RefreshCcwIcon
-              size={14}
-              onClick={handleRefetch}
-              className="cursor-pointer"
-            />
-          </p>
-        </div>
+    <div className="absolute top-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-auto z-50">
+      <div className="flex items-center gap-3">
+        <p className="text-3xl font-Syne tracking-widest text-white uppercase">EarthPulse</p>
       </div>
-      <AlertDialog>
-        <AlertDialogTrigger className="text-white hover:text-cyan-400 mt-2 me-2">
-          <BadgeInfoIcon size={30} />
-        </AlertDialogTrigger>
-        <AlertDialogContent className="bg-primary border-secondary text-white font-Syne">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center justify-between mb-2">
-              <span>Info</span>
-              <AlertDialogCancel className="bg-transparent hover:bg-transparent hover:text-white border-none">
-                <XIcon />
-              </AlertDialogCancel>
-            </AlertDialogTitle>
-            <div className="px-2 text-base">
-              <ul className="flex flex-col gap-2 mb-4">
-                <l className="flex items-center gap-2">
-                  <p className="bg-[#eed7a1] w-6 h-4 rounded p-0 m-0" />
-                  <span> - Lower Magnitude</span>
-                </l>
-                <li className="flex items-center gap-2">
-                  <p className="bg-[#84cdee] w-6 h-4 rounded p-0 m-0" />
-                  <span> - Medium Magnitude</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <p className="bg-[#ffbcda] w-6 h-4 rounded p-0 m-0" />
-                  <span> - Higher Magnitude</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <p className="bg-[#eb2d3a] w-6 h-4 rounded p-0 m-0" />
-                  <span> - Very High Magnitude</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1">
-                      <p className="bg-[#baebff] w-6 h-4 rounded p-0 m-0" />
-                      <p className="bg-[#bebcfc] w-6 h-4 rounded p-0 m-0" />
+      <div className="flex items-center gap-4 text-sm text-gray-400">
+        <p className="flex items-center gap-2">
+          Last updated: <time className="text-white">{fetchedTime}</time>
+        </p>
+        <button
+          onClick={handleRefetch}
+          className="hover:text-cyan-400 transition-colors"
+        >
+          <RefreshCcwIcon size={16} />
+        </button>
+        <AlertDialog>
+          <AlertDialogTrigger className="hover:text-cyan-400 transition-colors">
+            <BadgeInfoIcon size={16} />
+          </AlertDialogTrigger>
+          <AlertDialogContent className="bg-black/90 border border-cyan-500/30 text-white font-Syne backdrop-blur-md">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center justify-between mb-2 text-cyan-400">
+                <span>Legend</span>
+                <AlertDialogCancel className="bg-transparent hover:bg-transparent hover:text-white border-none">
+                  <XIcon />
+                </AlertDialogCancel>
+              </AlertDialogTitle>
+              <div className="px-2 text-base">
+                <ul className="flex flex-col gap-3 mb-4">
+                  <li className="flex items-center gap-3">
+                    <div className="bg-[#eed7a1] w-4 h-4 rounded-full shadow-[0_0_10px_#eed7a1]" />
+                    <span className="text-gray-300">Magnitude &lt; 3</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="bg-[#84cdee] w-5 h-5 rounded-full shadow-[0_0_10px_#84cdee]" />
+                    <span className="text-gray-300">Magnitude 3 - 5</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="bg-[#ffbcda] w-6 h-6 rounded-full shadow-[0_0_10px_#ffbcda]" />
+                    <span className="text-gray-300">Magnitude 5 - 7</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="bg-[#eb2d3a] w-8 h-8 rounded-full shadow-[0_0_10px_#eb2d3a]" />
+                    <span className="text-gray-300">Magnitude &gt; 7</span>
+                  </li>
+                  <li className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-800">
+                    <div className="flex gap-1">
+                      <div className="bg-[#baebff] w-6 h-6 rounded-full flex items-center justify-center text-black text-xs font-bold">10</div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <p className="bg-[#d689ff] w-6 h-4 rounded p-0 m-0" />
-                      <p className="bg-[#a564d3] w-6 h-4 rounded p-0 m-0" />
-                    </div>
-                  </div>
-                  <span>
-                    {" "}
-                    - Clusters (Groups Markers to reduce Clutter & Lag on Map)
-                  </span>
-                </li>
-              </ul>
-            </div>
-          </AlertDialogHeader>
-        </AlertDialogContent>
-      </AlertDialog>
+                    <span className="text-gray-300">Clustered Events</span>
+                  </li>
+                </ul>
+              </div>
+            </AlertDialogHeader>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </div>
   );
 }
