@@ -110,13 +110,13 @@ export default function EQModal({ quake, isModalOpen, handleModalChange }) {
 
   return (
     <AlertDialog open={isModalOpen} onOpenChange={handleModalChange}>
-      <AlertDialogContent className="w-fit bg-primary border-secondary text-white max-[847px]:max-h-[90vh] max-[847px]:!overflow-scroll">
+      <AlertDialogContent className="w-fit bg-black/90 border border-cyan-500/50 shadow-[0_0_30px_rgba(34,211,238,0.2)] text-white max-[847px]:max-h-[90vh] max-[847px]:!overflow-scroll backdrop-blur-xl rounded-xl">
         <AlertDialogHeader className="overflow-x-scroll">
-          <AlertDialogTitle className="underline mb-2">
+          <AlertDialogTitle className="text-cyan-400 text-xl tracking-wider uppercase mb-4 border-b border-cyan-500/30 pb-2">
             {quake.properties.title}
           </AlertDialogTitle>
           <div className="flex flex-col items-start justify-center p-1">
-            <div className="flex flex-col gap-2 overflow-x-scroll whitespace-nowrap">
+            <div className="flex flex-col gap-2 overflow-x-scroll whitespace-nowrap w-full">
               {groupedData.identifiers.map((item, index) => (
                 <InfoPopover
                   key={index}
@@ -125,7 +125,7 @@ export default function EQModal({ quake, isModalOpen, handleModalChange }) {
                   content={item.content}
                 />
               ))}
-              <hr className="border-secondary my-2" />
+              <div className="w-full h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent my-3" />
               {groupedData.locationInfo.map((item, index) => (
                 <InfoPopover
                   key={index}
@@ -134,7 +134,7 @@ export default function EQModal({ quake, isModalOpen, handleModalChange }) {
                   content={item.content}
                 />
               ))}
-              <hr className="border-secondary my-2" />
+              <div className="w-full h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent my-3" />
               {groupedData.magnitude.map((item, index) => (
                 <InfoPopover
                   key={index}
@@ -143,7 +143,7 @@ export default function EQModal({ quake, isModalOpen, handleModalChange }) {
                   content={item.content}
                 />
               ))}
-              <hr className="border-secondary my-2" />
+              <div className="w-full h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent my-3" />
               {groupedData.timestamps.map((item, index) => (
                 <InfoPopover
                   key={index}
@@ -152,7 +152,7 @@ export default function EQModal({ quake, isModalOpen, handleModalChange }) {
                   content={item.content}
                 />
               ))}
-              <hr className="border-secondary my-2" />
+              <div className="w-full h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent my-3" />
               {groupedData.details.map((item, index) => (
                 <InfoPopover
                   key={index}
@@ -165,9 +165,9 @@ export default function EQModal({ quake, isModalOpen, handleModalChange }) {
             </div>
           </div>
         </AlertDialogHeader>
-        <AlertDialogFooter>
+        <AlertDialogFooter className="mt-6">
           <AlertDialogCancel
-            className="bg-transparent hover:bg-transparent hover:text-white"
+            className="bg-transparent border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 transition-all duration-300 uppercase tracking-widest text-xs px-8"
             onClick={() => handleModalChange(false)}
           >
             Close

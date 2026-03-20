@@ -10,12 +10,13 @@ export const FilterProvider = ({ children }) => {
   const [tsunamiFilter, setTsunamiFilter] = useState(null);
   const [statusFilter, setStatusFilter] = useState(null);
   const [alertFilter, setAlertFilter] = useState(null);
+  const [timeFilter, setTimeFilter] = useState(null); // e.g., 1, 6, 12, 24
   const [filterCount, setFilterCount] = useState(null);
   const [resetMap, setResetMap] = useState(null);
 
   const getFilteredData = () => {
     const filteredData = earthquakes.filter((quake) => {
-      const { mag, magType, sig, tsunami, status, alert } = quake.properties;
+      const { mag, magType, sig, tsunami, status, alert, time } = quake.properties;
 
       const magnitude = parseFloat(mag);
       const magnitudeMatches =
@@ -37,13 +38,22 @@ export const FilterProvider = ({ children }) => {
           );
         })();
 
+      const timeMatches =
+        timeFilter === null ||
+        (() => {
+          const now = Date.now();
+          const hoursAgo = now - timeFilter * 60 * 60 * 1000;
+          return time >= hoursAgo;
+        })();
+
       return (
         magnitudeMatches &&
         (magnitudeTypeFilter === null || magType == magnitudeTypeFilter) &&
         significanceMatches &&
         (tsunamiFilter === null || tsunami == tsunamiFilter) &&
         (statusFilter === null || status == statusFilter) &&
-        (alertFilter === null || alert == alertFilter)
+        (alertFilter === null || alert == alertFilter) &&
+        timeMatches
       );
     });
     if (
@@ -52,7 +62,8 @@ export const FilterProvider = ({ children }) => {
       significanceFilter != null ||
       tsunamiFilter != null ||
       statusFilter != null ||
-      alertFilter != null
+      alertFilter != null ||
+      timeFilter != null
     ) {
       setFilterCount(filteredData.length);
     }
@@ -67,6 +78,7 @@ export const FilterProvider = ({ children }) => {
     setTsunamiFilter(null);
     setStatusFilter(null);
     setAlertFilter(null);
+    setTimeFilter(null);
     setFilterCount(null);
     setResetMap(true);
   };
@@ -88,6 +100,8 @@ export const FilterProvider = ({ children }) => {
         setStatusFilter,
         alertFilter,
         setAlertFilter,
+        timeFilter,
+        setTimeFilter,
         filterCount,
         getFilteredData,
         resetFilters,

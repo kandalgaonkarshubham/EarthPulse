@@ -8,6 +8,9 @@ import Map from "@/components/Map";
 import { useFilterContext } from "@/context/Filter";
 import FilterDrawer from "./components/FilterDrawer";
 
+import { LeftSidebar, RightSidebar } from "@/components/Sidebars";
+import { CornerInfo } from "@/components/CornerInfo";
+
 function App() {
   const { earthquakes, setEarthquakes } = useFilterContext();
 
@@ -59,19 +62,31 @@ function App() {
   }, [refetch]);
 
   return (
-    <div className="h-screen flex flex-col items-start p-4">
-      <Header
-        toggleDrawer={toggleDrawer}
-        fetchedTime={fetchedTime}
-        handleRefetch={handleRefetch}
-      />
-      {loading ? (
-        <Loader />
-      ) : earthquakes.length != 0 ? (
-        <Map />
-      ) : (
-        <Error error={error} />
-      )}
+    <div className="relative w-screen h-screen overflow-hidden bg-black text-white font-sans">
+      {/* Map Background */}
+      <div className="absolute inset-0 z-0">
+        {loading ? (
+          <Loader />
+        ) : earthquakes.length !== 0 ? (
+          <Map />
+        ) : (
+          <Error error={error} />
+        )}
+      </div>
+
+      {/* Overlay UI */}
+      <div className="absolute inset-0 z-10 pointer-events-none">
+        <Header
+          toggleDrawer={toggleDrawer}
+          fetchedTime={fetchedTime}
+          handleRefetch={handleRefetch}
+        />
+        <LeftSidebar />
+        <RightSidebar />
+        <CornerInfo />
+      </div>
+
+      {/* Keep the drawer for mobile or fallback */}
       <FilterDrawer drawer={drawer} toggleDrawer={toggleDrawer} />
     </div>
   );

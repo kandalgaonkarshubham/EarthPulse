@@ -16,6 +16,7 @@ export default function Map() {
     tsunamiFilter,
     statusFilter,
     alertFilter,
+    timeFilter,
     getFilteredData,
     resetMap,
   } = useFilterContext();
@@ -155,14 +156,16 @@ export default function Map() {
             offset: 25,
             closeButton: false,
             closeOnMove: true,
-            className: "eq-popup",
+            className: "futuristic-popup",
           })
             .setLngLat(coordinates)
             .setHTML(
-              ` <h3>${earthquake.properties.title}</h3>
-                <p><span>Magnitude:</span> ${earthquake.properties.mag}</p>
-                <p><span>Location:</span> ${earthquake.properties.place}</p>
-                <p class="readmore">Read More...</p>
+              ` <div class="p-3 bg-black/80 border border-cyan-500/50 rounded-lg shadow-[0_0_15px_rgba(34,211,238,0.3)] backdrop-blur-md text-white font-sans">
+                  <h3 class="text-cyan-400 text-sm font-bold uppercase tracking-wider mb-2 border-b border-cyan-500/30 pb-1">${earthquake.properties.title}</h3>
+                  <p class="text-xs mb-1"><span class="text-gray-400">Magnitude:</span> <span class="text-white font-mono">${earthquake.properties.mag}</span></p>
+                  <p class="text-xs mb-3"><span class="text-gray-400">Location:</span> <span class="text-white">${earthquake.properties.place}</span></p>
+                  <button class="readmore w-full py-1.5 bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-500/50 rounded text-cyan-300 text-xs uppercase tracking-widest transition-colors">Read More</button>
+                </div>
               `
             )
             .addTo(mapRef.current);
@@ -195,6 +198,7 @@ export default function Map() {
       tsunamiFilter != null ||
       statusFilter != null ||
       alertFilter != null ||
+      timeFilter != null ||
       resetMap
     ) {
       const refilteredData = getFilteredData();
@@ -208,6 +212,7 @@ export default function Map() {
     tsunamiFilter,
     statusFilter,
     alertFilter,
+    timeFilter,
     resetMap,
   ]);
 

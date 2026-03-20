@@ -29,30 +29,15 @@ body {
   border-top-color: #181717 !important;
 }
 
-.eq-popup .mapboxgl-popup-content {
-  background: #181717 !important;
-  border-radius: 0.5rem;
-  color: white;
-  font-family: Quicksand;
-  display: flex;
-  flex-direction: column;
+/* Futuristic Mapbox Popup Overrides */
+.futuristic-popup .mapboxgl-popup-content {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
   cursor: pointer;
 }
-
-.eq-popup .mapboxgl-popup-content h3 {
-  text-decoration: underline;
-}
-
-.eq-popup .mapboxgl-popup-content p span {
-  font-weight: 900;
-}
-
-.eq-popup .mapboxgl-popup-content .readmore {
-  font-weight: 900;
-  font-size: smaller;
-  text-align: center;
-  text-transform: uppercase;
-  margin-top: 5px;
+.futuristic-popup .mapboxgl-popup-tip {
+  border-top-color: rgba(34, 211, 238, 0.5) !important;
 }
 
 /* Loader */
