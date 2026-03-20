@@ -2,8 +2,23 @@ import { useFilterContext } from '@/context/Filter';
 import { useMemo } from 'react';
 
 export default function CornerInfo() {
-  const { earthquakes, getFilteredData } = useFilterContext();
-  const filteredData = useMemo(() => getFilteredData(), []);
+  const {
+    earthquakes,
+    getFilteredData,
+    timeRangeFilter,
+    magnitudeFilter,
+    magnitudeTypeFilter,
+    statusFilter,
+    tsunamiFilter,
+  } = useFilterContext();
+
+  const filteredData = useMemo(() => getFilteredData(), [
+    timeRangeFilter,
+    magnitudeFilter,
+    magnitudeTypeFilter,
+    statusFilter,
+    tsunamiFilter,
+  ]);
 
   // Calculate statistics
   const stats = useMemo(() => {

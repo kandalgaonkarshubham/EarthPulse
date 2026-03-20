@@ -10,6 +10,7 @@ import { useFilterContext } from "@/context/Filter";
 export default function Map() {
   const {
     earthquakes,
+    timeRangeFilter,
     magnitudeFilter,
     magnitudeTypeFilter,
     significanceFilter,
@@ -189,6 +190,7 @@ export default function Map() {
 
   useEffect(() => {
     if (
+      timeRangeFilter != null ||
       magnitudeFilter != null ||
       magnitudeTypeFilter != null ||
       significanceFilter != null ||
@@ -202,6 +204,7 @@ export default function Map() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    timeRangeFilter,
     magnitudeFilter,
     magnitudeTypeFilter,
     significanceFilter,

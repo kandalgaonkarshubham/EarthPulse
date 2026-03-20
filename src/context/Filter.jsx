@@ -4,6 +4,7 @@ const FilterContext = createContext();
 
 export const FilterProvider = ({ children }) => {
   const [earthquakes, setEarthquakes] = useState([]);
+  const [timeRangeFilter, setTimeRangeFilter] = useState(null); // '6h', '12h', '24h', '7d', '30d'
   const [magnitudeFilter, setMagnitudeFilter] = useState(null);
   const [magnitudeTypeFilter, setMagnitudeTypeFilter] = useState(null);
   const [significanceFilter, setSignificanceFilter] = useState(null);
@@ -14,8 +15,28 @@ export const FilterProvider = ({ children }) => {
   const [resetMap, setResetMap] = useState(null);
 
   const getFilteredData = () => {
+    const now = Date.now();
+
     const filteredData = earthquakes.filter((quake) => {
-      const { mag, magType, sig, tsunami, status, alert } = quake.properties;
+      const { mag, magType, sig, tsunami, status, alert, time } = quake.properties;
+
+      // Time range filtering
+      let timeMatches = true;
+      if (timeRangeFilter) {
+        const earthquakeTime = new Date(time).getTime();
+        const timeDiff = now - earthquakeTime;
+        const hoursDiff = timeDiff / (1000 * 60 * 60);
+
+        const timeRanges = {
+          '6h': 6,
+          '12h': 12,
+          '24h': 24,
+          '7d': 24 * 7,
+          '30d': 24 * 30,
+        };
+
+        timeMatches = hoursDiff <= (timeRanges[timeRangeFilter] || 24);
+      }
 
       const magnitude = parseFloat(mag);
       const magnitudeMatches =
@@ -38,6 +59,7 @@ export const FilterProvider = ({ children }) => {
         })();
 
       return (
+        timeMatches &&
         magnitudeMatches &&
         (magnitudeTypeFilter === null || magType == magnitudeTypeFilter) &&
         significanceMatches &&
@@ -47,6 +69,7 @@ export const FilterProvider = ({ children }) => {
       );
     });
     if (
+      timeRangeFilter != null ||
       magnitudeFilter != null ||
       magnitudeTypeFilter != null ||
       significanceFilter != null ||
@@ -61,6 +84,7 @@ export const FilterProvider = ({ children }) => {
   };
 
   const resetFilters = () => {
+    setTimeRangeFilter(null);
     setMagnitudeFilter(null);
     setMagnitudeTypeFilter(null);
     setSignificanceFilter(null);
@@ -76,6 +100,8 @@ export const FilterProvider = ({ children }) => {
       value={{
         earthquakes,
         setEarthquakes,
+        timeRangeFilter,
+        setTimeRangeFilter,
         magnitude: magnitudeFilter,
         setMagnitude: setMagnitudeFilter,
         magnitudeFilter,
