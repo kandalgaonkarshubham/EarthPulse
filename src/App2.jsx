@@ -1,5 +1,4 @@
 import { useState } from "react";
-import FilterBackground from "@/components/FilterBackground";
 import FilterMenu from "@/components/FilterMenu";
 import FilterCornersUI from "@/components/FilterCornersUI";
 
@@ -9,12 +8,7 @@ export default function App() {
   const [search, setSearch] = useState("");
 
   return (
-    <div
-      className="relative w-full h-screen overflow-hidden"
-      style={{ background: "#071018", fontFamily: "'Roboto', sans-serif" }}
-    >
-      <FilterBackground />
-
+    <div className="relative w-full h-screen overflow-hidden">
       <FilterMenu
         selectedTime={selectedTime}
         setSelectedTime={setSelectedTime}
