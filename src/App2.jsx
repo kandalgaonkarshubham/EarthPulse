@@ -1,6 +1,6 @@
 import { useState } from "react";
-import FilterMenu from "@/components/FilterMenu";
-import FilterCornersUI from "@/components/FilterCornersUI";
+import FilterMenu from "@/components/v2/FilterMenu";
+import FilterCornersUI from "@/components/v2/FilterCornersUI";
 
 export default function App() {
   const [selectedTime, setSelectedTime] = useState("9 am");
@@ -8,7 +8,7 @@ export default function App() {
   const [search, setSearch] = useState("");
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="relative w-full h-screen overflow-hidden bg-neutral-900">
       <FilterMenu
         selectedTime={selectedTime}
         setSelectedTime={setSelectedTime}
