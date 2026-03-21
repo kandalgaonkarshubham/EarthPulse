@@ -41,7 +41,7 @@ const gradients = [
   },
   {
     id: "pg4",
-    x1: "-99.9758", y1: "-26.3", x2: "-99.9758", y2: "926.3",
+    x1: "-199.9758", y1: "-26.3", x2: "-99.9758", y2: "926.3",
     stops: [
       { offset: "0", opacity: 0 },
       { offset: "0.25", opacity: 0.05 },
@@ -51,7 +51,7 @@ const gradients = [
   },
   {
     id: "pg5",
-    x1: "725", y1: "-26.3", x2: "725", y2: "926.3",
+    x1: "825", y1: "-26.3", x2: "725", y2: "926.3",
     stops: [
       { offset: "0", opacity: 0 },
       { offset: "0.25", opacity: 0.05 },
@@ -66,8 +66,8 @@ const arcs = [
   { gradient: "pg1", strokeWidth: 1.5, d: "M675 60.3C814.219 140.688 899.98 289.239 899.98 450C899.98 610.761 814.219 759.312 675 839.7" },
   { gradient: "pg2", strokeWidth: 1,   d: "M275 146.9C166.718 209.424 100.015 324.963 100.015 450C100.015 575.037 166.718 690.576 275 753.1" },
   { gradient: "pg3", strokeWidth: 1,   d: "M625 146.9C733.282 209.424 799.985 324.963 799.985 450C799.985 575.037 733.282 690.576 625 753.1" },
-  { gradient: "pg4", strokeWidth: 1,   d: "M175 -26.3C4.84305 71.9517 -99.9758 253.514 -99.9758 450C-99.9758 646.486 4.84305 828.048 175 926.3" },
-  { gradient: "pg5", strokeWidth: 1,   d: "M725 -26.3C895.157 71.9517 999.976 253.514 999.976 450C999.976 646.486 895.157 828.048 725 926.3" },
+  { gradient: "pg4", strokeWidth: 1,   d: "M75 -26.3C-95.157 71.9517 -199.9758 253.514 -199.9758 450C-199.9758 646.486 -95.157 828.048 75 926.3" },
+  { gradient: "pg5", strokeWidth: 1,   d: "M825 -26.3C995.157 71.9517 1099.976 253.514 1099.976 450C1099.976 646.486 995.157 828.048 825 926.3" },
 ];
 
 export default function GlobeArcs() {
@@ -88,9 +88,9 @@ export default function GlobeArcs() {
             ))}
           </linearGradient>
         ))}
-        <clipPath id="planetClip">
-          <rect width="900" height="900" fill="white" />
-        </clipPath>
+      <clipPath id="planetClip">
+        <rect x="-200" y="-100" width="1300" height="1100" fill="white" />
+      </clipPath>
       </defs>
 
       <g clipPath="url(#planetClip)">
