@@ -1,5 +1,5 @@
 import { useState } from "react";
-import FilterMenu from "@/components/v2/FilterMenu";
+import FilterLayout from "@/components/v2/FilterLayout";
 import FilterCornersUI from "@/components/v2/FilterCornersUI";
 
 export default function App() {
@@ -9,7 +9,7 @@ export default function App() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-neutral-900">
-      <FilterMenu
+      <FilterLayout
         selectedTime={selectedTime}
         setSelectedTime={setSelectedTime}
         selectedMonth={selectedMonth}
