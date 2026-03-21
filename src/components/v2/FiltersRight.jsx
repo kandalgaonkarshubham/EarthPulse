@@ -1,22 +1,40 @@
-const monthMarkers = [
-  { label: "March", x: 1109, y: 179 },
-  { label: "April", x: 1129, y: 218 },
-  { label: "May",   x: 1145, y: 258, defaultActive: true },
-  { label: "Jun",   x: 1157, y: 299 },
-  { label: "Jul",   x: 1165, y: 341 },
-  { label: "Aug",   x: 1169, y: 384 },
-  { label: "Sep",   x: 1169, y: 428 },
-  { label: "Oct",   x: 1165, y: 471 },
-  { label: "Nov",   x: 1157, y: 513 },
-  { label: "Dec",   x: 1145, y: 554 },
-  { label: "Jan",   x: 1129, y: 594 },
-  { label: "Feb",   x: 1109, y: 633 },
+import { useMemo } from "react";
+import { sampleArcAtY, ARC_DEFS, ARC_SVG_OFFSET } from "./FilterGlobeArcs";
+
+// Original static Y positions of each month marker.
+const MONTH_MARKERS = [
+  { label: "March", y: 179 },
+  { label: "April", y: 218 },
+  { label: "May",   y: 258, defaultActive: true },
+  { label: "Jun",   y: 299 },
+  { label: "Jul",   y: 341 },
+  { label: "Aug",   y: 384 },
+  { label: "Sep",   y: 428 },
+  { label: "Oct",   y: 471 },
+  { label: "Nov",   y: 513 },
+  { label: "Dec",   y: 554 },
+  { label: "Jan",   y: 594 },
+  { label: "Feb",   y: 633 },
 ];
 
-export default function FiltersRight({ selectedMonth, setSelectedMonth }) {
+// The buttons sit on the middle-right arc (pg1)
+const [, , , START_X, START_Y, END_X, END_Y] = ARC_DEFS[1];
+const APEX_Y = (START_Y + END_Y) / 2;
+
+export default function FiltersRight({ selectedMonth, setSelectedMonth, apex }) {
+  const markers = useMemo(() => {
+    if (!apex) return MONTH_MARKERS.map(m => ({ ...m, x: 625 + ARC_SVG_OFFSET.x, y: m.y + ARC_SVG_OFFSET.y }));
+    const apexX = apex.right.middle;
+    return MONTH_MARKERS.map((m) => {
+      const localY = m.y - ARC_SVG_OFFSET.y;
+      const pt = sampleArcAtY(START_X, START_Y, apexX, APEX_Y, END_X, END_Y, localY);
+      return { ...m, x: pt.x + ARC_SVG_OFFSET.x, y: pt.y + ARC_SVG_OFFSET.y };
+    });
+  }, [apex]);
+
   return (
     <>
-      {monthMarkers.map((marker) => {
+      {markers.map((marker) => {
         const isActive = marker.label === selectedMonth;
         return (
           <g

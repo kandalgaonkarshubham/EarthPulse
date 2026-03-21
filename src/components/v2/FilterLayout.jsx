@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import GlobeArcs from "./FilterGlobeArcs";
 import FiltersLeft from "./FiltersLeft";
 import FiltersRight from "./FiltersRight";
@@ -9,14 +10,20 @@ export default function FilterLayout({
   selectedMonth,
   setSelectedMonth,
 }) {
+  const [apex, setApex] = useState(null);
+
+  const handleApexChange = useCallback((newApex) => {
+    setApex(newApex);
+  }, []);
+
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-hidden">
-      {/* Background Map - Covers entire screen */}
+      {/* Background Map */}
       <div className="absolute inset-0 w-full h-full">
         <Map />
       </div>
 
-      {/* SVG Overlay - Decorative and Filters */}
+      {/* SVG Overlay */}
       <svg
         viewBox="0 0 1440 812"
         className="absolute inset-0 w-full h-full pointer-events-none z-10"
@@ -33,12 +40,14 @@ export default function FilterLayout({
           </filter>
         </defs>
 
-        <GlobeArcs />
+        {/* GlobeArcs drives the apex state and notifies parent */}
+        <GlobeArcs onApexChange={handleApexChange} />
 
         <g className="pointer-events-auto">
           <FiltersLeft
             selectedTime={selectedTime}
             setSelectedTime={setSelectedTime}
+            apex={apex}
           />
         </g>
 
@@ -46,6 +55,7 @@ export default function FilterLayout({
           <FiltersRight
             selectedMonth={selectedMonth}
             setSelectedMonth={setSelectedMonth}
+            apex={apex}
           />
         </g>
       </svg>
