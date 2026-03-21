@@ -226,8 +226,8 @@ export default function Map() {
   }, [filteredEarthquakes]);
 
   return (
-    <div className="w-full h-full rounded-lg">
-      <div ref={mapContainerRef} style={{ width: "100%", height: "100%" }} />
+    <div className="w-full h-screen relative overflow-hidden">
+      <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
       {selectedEarthquake && isModalOpen && (
         <EQModal
           quake={selectedEarthquake}
