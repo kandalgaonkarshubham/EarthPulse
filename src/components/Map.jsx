@@ -38,7 +38,24 @@ export default function Map() {
       style: "mapbox://styles/mapbox/dark-v11",
       center: [73.22969, 19.15705],
       zoom: 2,
+      projection: "globe", // Explicitly enable globe projection
       accessToken: import.meta.env.VITE_MAPBOX_KEY,
+    });
+
+    mapRef.current.on("style.load", () => {
+      // Remove or make the style's background transparent
+      if (mapRef.current.getLayer("background")) {
+        mapRef.current.setPaintProperty("background", "background-opacity", 0);
+      }
+
+      // Setting atmospheric fog to be completely transparent with no stars
+      mapRef.current.setFog({
+        color: "rgba(0, 0, 0, 0)",
+        "high-color": "rgba(0, 0, 0, 0)",
+        "horizon-blend": 0,
+        "space-color": "rgba(0, 0, 0, 0)",
+        "star-intensity": 0,
+      });
     });
 
     mapRef.current.on("load", () => {
