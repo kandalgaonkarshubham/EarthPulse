@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import debounce from "lodash.debounce";
 
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -28,6 +29,7 @@ export default function Map() {
 
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
+  const lastCoordsRef = useRef({ lng: 0, lat: 0 });
 
   const [selectedEarthquake, setSelectedEarthquake] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,6 +71,18 @@ export default function Map() {
       if (!mapRef.current) return;
       const { lng, lat } = mapRef.current.getCenter();
 
+      // Skip if movement is negligible (less than ~0.05 degrees, about 5.5km at equator)
+      // to save Mapbox Geocoding API costs.
+      const dx = lng - lastCoordsRef.current.lng;
+      const dy = lat - lastCoordsRef.current.lat;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < 0.05 && lastCoordsRef.current.lng !== 0) {
+        return;
+      }
+
+      lastCoordsRef.current = { lng, lat };
+
       const latHem = lat >= 0 ? "North" : "South";
       setHemisphere(`${latHem} hemisphere`);
 
@@ -99,6 +113,8 @@ export default function Map() {
         console.error("Geocoding failed", err);
       }
     };
+
+    const debouncedUpdateLocation = debounce(updateLocationInfo, 1000);
 
     map.on("style.load", () => {
       if (map.getLayer("background")) {
@@ -260,12 +276,13 @@ export default function Map() {
       });
     });
 
-    map.on("moveend", updateLocationInfo);
+    map.on("moveend", debouncedUpdateLocation);
 
     return () => {
       resizeObserver.disconnect();
       map.off("zoom", handleZoom);
-      map.off("moveend", updateLocationInfo);
+      map.off("moveend", debouncedUpdateLocation);
+      debouncedUpdateLocation.cancel();
       map.remove();
       mapRef.current = null;
     };

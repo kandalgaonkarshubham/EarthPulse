@@ -148,41 +148,63 @@ export default function FiltersRight({ selectedFilters, setSelectedFilters, apex
               </text>
             </g>
 
-            {isPopupOpen && (
-              <g transform={`translate(${marker.x + 80}, ${marker.y - (marker.options.length * 15)})`}>
-                <rect x="-1000" y="-1000" width="2000" height="2000" fill="transparent" onClick={() => setPopupCategory(null)} />
-                <rect
-                  width="120"
-                  height={marker.options.length * 30 + 10}
-                  fill="#171717"
-                  rx="8"
-                  stroke="rgba(255,255,255,0.1)"
-                  strokeWidth="1"
-                  filter="drop-shadow(0 10px 15px rgba(0,0,0,0.5))"
-                />
-                {marker.options.map((opt, i) => {
-                  const isOptSelected = selectedFilters[marker.key] === opt.value;
-                  return (
-                    <g
-                      key={opt.value}
-                      transform={`translate(10, ${i * 30 + 25})`}
-                      onClick={() => handleOptionClick(marker.key, opt.value)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <rect x="-5" y="-15" width="110" height="25" fill={isOptSelected ? "rgba(255,255,255,0.1)" : "transparent"} rx="4" />
-                      <text
-                        fill={isOptSelected ? "#ffffff" : "#A3A3A3"}
-                        fontSize="12"
-                        fontFamily="Roboto, sans-serif"
-                        fontWeight={isOptSelected ? 600 : 400}
+            {isPopupOpen && (() => {
+              const popupWidth = 120;
+              const popupHeight = marker.options.length * 30 + 10;
+              
+              // Calculate horizontal position
+              let popupX = marker.x + 80;
+              if (popupX + popupWidth > 1430) { // 1440 - 10 margin
+                // Flip to left side if it would go off-screen
+                popupX = marker.x - popupWidth - 40;
+              }
+
+              // Calculate vertical position
+              let popupY = marker.y - (marker.options.length * 15);
+              
+              // Clamp vertical to keep it within view
+              if (popupY < 10) {
+                popupY = 10;
+              } else if (popupY + popupHeight > 802) { // 812 - 10 margin
+                popupY = 812 - popupHeight - 10;
+              }
+
+              return (
+                <g transform={`translate(${popupX}, ${popupY})`}>
+                  <rect x="-1000" y="-1000" width="2000" height="2000" fill="transparent" onClick={() => setPopupCategory(null)} />
+                  <rect
+                    width={popupWidth}
+                    height={popupHeight}
+                    fill="#171717"
+                    rx="8"
+                    stroke="rgba(255,255,255,0.1)"
+                    strokeWidth="1"
+                    filter="drop-shadow(0 10px 15px rgba(0,0,0,0.5))"
+                  />
+                  {marker.options.map((opt, i) => {
+                    const isOptSelected = selectedFilters[marker.key] === opt.value;
+                    return (
+                      <g
+                        key={opt.value}
+                        transform={`translate(10, ${i * 30 + 25})`}
+                        onClick={() => handleOptionClick(marker.key, opt.value)}
+                        style={{ cursor: "pointer" }}
                       >
-                        {opt.label}
-                      </text>
-                    </g>
-                  );
-                })}
-              </g>
-            )}
+                        <rect x="-5" y="-15" width="110" height="25" fill={isOptSelected ? "rgba(255,255,255,0.1)" : "transparent"} rx="4" />
+                        <text
+                          fill={isOptSelected ? "#ffffff" : "#A3A3A3"}
+                          fontSize="12"
+                          fontFamily="Roboto, sans-serif"
+                          fontWeight={isOptSelected ? 600 : 400}
+                        >
+                          {opt.label}
+                        </text>
+                      </g>
+                    );
+                  })}
+                </g>
+              );
+            })()}
           </g>
         );
       })}
