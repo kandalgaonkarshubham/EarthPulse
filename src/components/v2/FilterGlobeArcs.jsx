@@ -115,12 +115,9 @@ export const FIXED_APEX = {
   right: { inner: 799.985, middle: 899.98,    outer: 1099.976  },
 };
 
-// Still exported for FiltersLeft/FiltersRight which call it on mount.
 export function interpolateApex(_width) {
   return FIXED_APEX;
 }
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function GlobeArcs({ onApexChange }) {
   // Apex is fixed — curvature never changes with window size.

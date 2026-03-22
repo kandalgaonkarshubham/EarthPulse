@@ -33,7 +33,7 @@ export default function Map() {
   useEffect(() => {
     if (mapRef.current) return;
 
-    mapRef.current = new mapboxgl.Map({
+    const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
       center: [73.22969, 19.15705],
@@ -41,15 +41,24 @@ export default function Map() {
       projection: "globe", // Explicitly enable globe projection
       accessToken: import.meta.env.VITE_MAPBOX_KEY,
     });
+    mapRef.current = map;
 
-    mapRef.current.on("style.load", () => {
+    const resizeObserver = new ResizeObserver(() => {
+      map.resize();
+    });
+
+    if (mapContainerRef.current) {
+      resizeObserver.observe(mapContainerRef.current);
+    }
+
+    map.on("style.load", () => {
       // Remove or make the style's background transparent
-      if (mapRef.current.getLayer("background")) {
-        mapRef.current.setPaintProperty("background", "background-opacity", 0);
+      if (map.getLayer("background")) {
+        map.setPaintProperty("background", "background-opacity", 0);
       }
 
       // Setting atmospheric fog to be completely transparent with no stars
-      mapRef.current.setFog({
+      map.setFog({
         color: "rgba(0, 0, 0, 0)",
         "high-color": "rgba(0, 0, 0, 0)",
         "horizon-blend": 0,
@@ -58,8 +67,8 @@ export default function Map() {
       });
     });
 
-    mapRef.current.on("load", () => {
-      mapRef.current.addSource("earthquakes", {
+    map.on("load", () => {
+      map.addSource("earthquakes", {
         type: "geojson",
         data: {
           type: "FeatureCollection",
@@ -70,7 +79,7 @@ export default function Map() {
         clusterRadius: 50,
       });
 
-      mapRef.current.addLayer({
+      map.addLayer({
         id: "clusters",
         type: "circle",
         source: "earthquakes",
@@ -98,7 +107,7 @@ export default function Map() {
           ],
         },
       });
-      mapRef.current.addLayer({
+      map.addLayer({
         id: "cluster-count",
         type: "symbol",
         source: "earthquakes",
@@ -110,7 +119,7 @@ export default function Map() {
         },
       });
 
-      mapRef.current.addLayer({
+      map.addLayer({
         id: "unclustered-point",
         type: "circle",
         source: "earthquakes",
@@ -145,30 +154,30 @@ export default function Map() {
         },
       });
 
-      mapRef.current.on("click", "clusters", (e) => {
-        const features = mapRef.current.queryRenderedFeatures(e.point, {
+      map.on("click", "clusters", (e) => {
+        const features = map.queryRenderedFeatures(e.point, {
           layers: ["clusters"],
         });
         const clusterId = features[0].properties.cluster_id;
-        mapRef.current
+        map
           .getSource("earthquakes")
           .getClusterExpansionZoom(clusterId, (err, zoom) => {
             if (err) return;
-            mapRef.current.easeTo({
+            map.easeTo({
               center: features[0].geometry.coordinates,
               zoom: zoom,
             });
           });
       });
-      mapRef.current.on("click", "unclustered-point", (e) => {
+      map.on("click", "unclustered-point", (e) => {
         const earthquake = e.features[0];
         const coordinates = earthquake.geometry.coordinates.slice(0, 2);
-        mapRef.current.easeTo({
+        map.easeTo({
           center: coordinates,
           zoom: 8,
         });
 
-        mapRef.current.once("moveend", () => {
+        map.once("moveend", () => {
           const popup = new mapboxgl.Popup({
             offset: 25,
             closeButton: false,
@@ -185,7 +194,7 @@ export default function Map() {
                 </div>
               `
             )
-            .addTo(mapRef.current);
+            .addTo(map);
 
           setSelectedEarthquake(earthquake);
           popup.getElement().addEventListener("click", () => {
@@ -194,16 +203,22 @@ export default function Map() {
         });
       });
 
-      mapRef.current.on("mouseenter", "clusters", () => {
-        mapRef.current.getCanvas().style.cursor = "pointer";
+      map.on("mouseenter", "clusters", () => {
+        map.getCanvas().style.cursor = "pointer";
       });
-      mapRef.current.on("mouseenter", "unclustered-point", () => {
-        mapRef.current.getCanvas().style.cursor = "pointer";
+      map.on("mouseenter", "unclustered-point", () => {
+        map.getCanvas().style.cursor = "pointer";
       });
-      mapRef.current.on("mouseleave", "clusters", () => {
-        mapRef.current.getCanvas().style.cursor = "";
+      map.on("mouseleave", "clusters", () => {
+        map.getCanvas().style.cursor = "";
       });
     });
+
+    return () => {
+      resizeObserver.disconnect();
+      map.remove();
+      mapRef.current = null;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -242,8 +257,9 @@ export default function Map() {
     }
   }, [filteredEarthquakes]);
 
+
   return (
-    <div className="w-full h-screen relative overflow-hidden">
+    <div className="w-full h-full relative overflow-hidden">
       <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
       {selectedEarthquake && isModalOpen && (
         <EQModal
