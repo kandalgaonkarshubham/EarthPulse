@@ -2,15 +2,16 @@ import { useState, useCallback } from "react";
 import GlobeArcs from "./FilterGlobeArcs";
 import FiltersLeft from "./FiltersLeft";
 import FiltersRight from "./FiltersRight";
-import Map from "../Map";
+import { useFilterContext } from "@/context/Filter";
 
 export default function FilterLayout({
-  selectedTime,
-  setSelectedTime,
-  selectedMonth,
-  setSelectedMonth,
+  selectedTimeRange,
+  setSelectedTimeRange,
+  selectedFilters,
+  setSelectedFilters,
 }) {
   const [apex, setApex] = useState(null);
+  const { zoomProgress } = useFilterContext();
 
   const handleApexChange = useCallback((newApex) => {
     setApex(newApex);
@@ -18,11 +19,6 @@ export default function FilterLayout({
 
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-hidden">
-      {/* Background Map */}
-      <div className="absolute inset-0 w-full h-full">
-        <Map />
-      </div>
-
       {/* SVG Overlay */}
       <svg
         viewBox="0 0 1440 812"
@@ -41,21 +37,23 @@ export default function FilterLayout({
         </defs>
 
         {/* GlobeArcs drives the apex state and notifies parent */}
-        <GlobeArcs onApexChange={handleApexChange} />
+        <GlobeArcs onApexChange={handleApexChange} zoomProgress={zoomProgress} />
 
         <g className="pointer-events-auto">
           <FiltersLeft
-            selectedTime={selectedTime}
-            setSelectedTime={setSelectedTime}
+            selectedTimeRange={selectedTimeRange}
+            setSelectedTimeRange={setSelectedTimeRange}
             apex={apex}
+            zoomProgress={zoomProgress}
           />
         </g>
 
         <g className="pointer-events-auto">
           <FiltersRight
-            selectedMonth={selectedMonth}
-            setSelectedMonth={setSelectedMonth}
+            selectedFilters={selectedFilters}
+            setSelectedFilters={setSelectedFilters}
             apex={apex}
+            zoomProgress={zoomProgress}
           />
         </g>
       </svg>

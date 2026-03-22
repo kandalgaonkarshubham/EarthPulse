@@ -19,6 +19,9 @@ export default function Map() {
     timeFilter,
     getFilteredData,
     resetMap,
+    setLocation,
+    setHemisphere,
+    setMapZoom,   // ← NEW
   } = useFilterContext();
 
   const [filteredEarthquakes, setFilteredEarthquakes] = useState(earthquakes);
@@ -38,7 +41,7 @@ export default function Map() {
       style: "mapbox://styles/mapbox/dark-v11",
       center: [73.22969, 19.15705],
       zoom: 2,
-      projection: "globe", // Explicitly enable globe projection
+      projection: "globe",
       accessToken: import.meta.env.VITE_MAPBOX_KEY,
     });
     mapRef.current = map;
@@ -51,13 +54,57 @@ export default function Map() {
       resizeObserver.observe(mapContainerRef.current);
     }
 
+    // ── Report zoom to context ───────────────────────────────────────────────
+    const handleZoom = () => {
+      setMapZoom(map.getZoom());
+    };
+    map.on("zoom", handleZoom);
+    // Report initial zoom once loaded
+    map.on("load", () => {
+      setMapZoom(map.getZoom());
+    });
+    // ────────────────────────────────────────────────────────────────────────
+
+    const updateLocationInfo = async () => {
+      if (!mapRef.current) return;
+      const { lng, lat } = mapRef.current.getCenter();
+
+      const latHem = lat >= 0 ? "North" : "South";
+      setHemisphere(`${latHem} hemisphere`);
+
+      try {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${import.meta.env.VITE_MAPBOX_KEY}&types=country,region`
+        );
+        const data = await response.json();
+
+        if (data.features && data.features.length > 0) {
+          const regionFeature = data.features.find((f) => f.place_type.includes("region"));
+          const countryFeature = data.features.find((f) => f.place_type.includes("country"));
+
+          const region = regionFeature?.text;
+          const country = countryFeature?.text;
+
+          if (region && country) {
+            setLocation(`${region}, ${country}`);
+          } else if (country) {
+            setLocation(country);
+          } else {
+            setLocation("International Waters");
+          }
+        } else {
+          setLocation("International Waters");
+        }
+      } catch (err) {
+        console.error("Geocoding failed", err);
+      }
+    };
+
     map.on("style.load", () => {
-      // Remove or make the style's background transparent
       if (map.getLayer("background")) {
         map.setPaintProperty("background", "background-opacity", 0);
       }
 
-      // Setting atmospheric fog to be completely transparent with no stars
       map.setFog({
         color: "rgba(0, 0, 0, 0)",
         "high-color": "rgba(0, 0, 0, 0)",
@@ -68,6 +115,8 @@ export default function Map() {
     });
 
     map.on("load", () => {
+      updateLocationInfo();
+
       map.addSource("earthquakes", {
         type: "geojson",
         data: {
@@ -128,26 +177,22 @@ export default function Map() {
           "circle-color": [
             "step",
             ["get", "mag"],
-            "#eed7a1", // Color for lower magnitudes
+            "#eed7a1",
             3,
-            "#84cdee", // Medium magnitude
+            "#84cdee",
             5,
-            "#ffbcda", // Higher magnitude
+            "#ffbcda",
             7,
-            "#eb2d3a", // Very high magnitude
+            "#eb2d3a",
           ],
           "circle-radius": [
             "interpolate",
             ["linear"],
             ["get", "mag"],
-            2,
-            8, // Smallest size for low magnitude
-            6,
-            16, // Medium size for moderate magnitude
-            10,
-            24, // Large size for higher magnitude
-            14,
-            32, // Largest size for very high magnitude
+            2, 8,
+            6, 16,
+            10, 24,
+            14, 32,
           ],
           "circle-blur": 1,
           "circle-opacity": 0.7,
@@ -169,6 +214,7 @@ export default function Map() {
             });
           });
       });
+
       map.on("click", "unclustered-point", (e) => {
         const earthquake = e.features[0];
         const coordinates = earthquake.geometry.coordinates.slice(0, 2);
@@ -214,8 +260,12 @@ export default function Map() {
       });
     });
 
+    map.on("moveend", updateLocationInfo);
+
     return () => {
       resizeObserver.disconnect();
+      map.off("zoom", handleZoom);
+      map.off("moveend", updateLocationInfo);
       map.remove();
       mapRef.current = null;
     };
@@ -256,7 +306,6 @@ export default function Map() {
       });
     }
   }, [filteredEarthquakes]);
-
 
   return (
     <div className="w-full h-full relative overflow-hidden">

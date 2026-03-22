@@ -1,16 +1,4 @@
-import { useEffect } from "react";
-
-// ─── Bezier helpers ────────────────────────────────────────────────────────────
-
-// Original arc geometry (at full/static width)
-// Each arc is two cubic bezier segments joined at the apex (midpoint y).
-// Structure: startX, startY, apexX, apexY, endX, endY
-// Control point ratios reverse-engineered from the original static paths:
-//   CP1x = startX + (apexX - startX) * 0.623
-//   CP1y = startY + (apexY - startY) * 0.208
-//   CP2x = apexX
-//   CP2y = apexY - (apexY - startY) * 0.421
-// (symmetric for the bottom half)
+import { useEffect, useRef, useState } from "react";
 
 export function makeArcPath(startX, startY, apexX, apexY, endX, endY) {
   const dx = apexX - startX;
@@ -24,13 +12,14 @@ export function makeArcPath(startX, startY, apexX, apexY, endX, endY) {
 
   const cp3x = apexX;
   const cp3y = apexY + dyBot * 0.421;
-  const cp4x = endX + dx * 0.623; // endX mirrors startX, dx is same sign
+  const cp4x = endX + dx * 0.623;
   const cp4y = endY - dyBot * 0.208;
 
   return `M${startX} ${startY}C${cp1x} ${cp1y} ${cp2x} ${cp2y} ${apexX} ${apexY}C${cp3x} ${cp3y} ${cp4x} ${cp4y} ${endX} ${endY}`;
 }
 
-// Sample a cubic bezier at parameter t → {x, y}
+function lerp(a, b, t) { return a + (b - a) * t; }
+
 function cubicPoint(p0, p1, p2, p3, t) {
   const mt = 1 - t;
   return {
@@ -39,14 +28,10 @@ function cubicPoint(p0, p1, p2, p3, t) {
   };
 }
 
-// Given an arc definition and a target Y, find the point on the arc at that Y.
-// The arc is two cubic segments. We binary-search for t on the correct half.
 export function sampleArcAtY(startX, startY, apexX, apexY, endX, endY, targetY) {
   const dx = apexX - startX;
   const dyTop = apexY - startY;
   const dyBot = endY - apexY;
-
-  // Decide which half
   const useTop = targetY <= apexY;
 
   let p0, p1, p2, p3;
@@ -62,7 +47,6 @@ export function sampleArcAtY(startX, startY, apexX, apexY, endX, endY, targetY) 
     p3 = { x: endX,                y: endY                   };
   }
 
-  // Binary search for t where y ≈ targetY
   let lo = 0, hi = 1;
   for (let i = 0; i < 32; i++) {
     const mid = (lo + hi) / 2;
@@ -72,15 +56,8 @@ export function sampleArcAtY(startX, startY, apexX, apexY, endX, endY, targetY) 
   return cubicPoint(p0, p1, p2, p3, (lo + hi) / 2);
 }
 
-// ─── Coordinate offset ────────────────────────────────────────────────────────
-// The GlobeArcs nested SVG sits at x="270" y="-44" inside the parent SVG.
-// Arc coordinates are in local space (0 0 900 900). To convert to parent space
-// (0 0 1440 812) add this offset. Filters live in parent space, so they need it.
 export const ARC_SVG_OFFSET = { x: 270, y: -44 };
 
-// ─── Arc definitions ───────────────────────────────────────────────────────────
-
-// [id, side, tier, startX, startY, endX, endY, strokeWidth]
 export const ARC_DEFS = [
   ["pg0", "left",  "middle", 225, 60.3,  225, 839.7, 1.5],
   ["pg1", "right", "middle", 675, 60.3,  675, 839.7, 1.5],
@@ -105,11 +82,6 @@ const GRADIENTS_BASE = [
   { id: "pg5", side: "right", tier: "outer",  stops: [{offset:"0",opacity:0},{offset:"0.25",opacity:0.05},{offset:"0.75",opacity:0.05},{offset:"1",opacity:0}] },
 ];
 
-// ─── Fixed apex values ────────────────────────────────────────────────────────
-// Curvature is constant at all window widths. The apex x never changes.
-// Only the spacing between arcs was meant to be dynamic — but that feature
-// was removed. Apex stays at original static values always.
-
 export const FIXED_APEX = {
   left:  { inner: 100.015, middle: 0.0198,    outer: -199.9758 },
   right: { inner: 799.985, middle: 899.98,    outer: 1099.976  },
@@ -119,13 +91,76 @@ export function interpolateApex(_width) {
   return FIXED_APEX;
 }
 
-export default function GlobeArcs({ onApexChange }) {
-  // Apex is fixed — curvature never changes with window size.
+// ---------------------------------------------------------------------------
+// Hug shift — how far the main arc translates toward its edge (local SVG units).
+// Parent-space target: left → x=24, right → x=1416 (24px viewBox padding).
+// Local shift = target_parent_x - (startX + SVG_offset_x)
+//   left:  24   - (225 + 270) = -471
+//   right: 1416 - (675 + 270) =  471
+//
+// IMPORTANT: main arcs are rendered OUTSIDE the clipPath group so the
+// translation is never clipped. Secondary arcs stay inside clipPath.
+// ---------------------------------------------------------------------------
+// Single source of truth — change EDGE_PADDING here and dots + lines both update.
+export const EDGE_PADDING     =  84;  // viewBox units from each side
+export const LEFT_HUG_SHIFT  = EDGE_PADDING - 495;   // 24 - (225+270)
+export const RIGHT_HUG_SHIFT = (1440 - EDGE_PADDING) - 945; // (1440-24) - (675+270)
+
+// ---------------------------------------------------------------------------
+// useSpringT — smoothly animates toward a binary target (0 or 1) via rAF spring.
+// Exported so FiltersLeft / FiltersRight share the exact same animated value.
+// ---------------------------------------------------------------------------
+export function useSpringT(target, { stiffness = 140, damping = 20 } = {}) {
+  const [t, setT] = useState(target);
+  const state = useRef({ pos: target, vel: 0, raf: null });
+
+  useEffect(() => {
+    const s = state.current;
+    if (s.raf) cancelAnimationFrame(s.raf);
+
+    let last = performance.now();
+
+    const tick = (now) => {
+      const dt = Math.min((now - last) / 1000, 0.064);
+      last = now;
+
+      const force = stiffness * (target - s.pos);
+      const damp  = damping   * s.vel;
+      s.vel += (force - damp) * dt;
+      s.pos += s.vel * dt;
+
+      if (Math.abs(target - s.pos) < 0.0005 && Math.abs(s.vel) < 0.0005) {
+        s.pos = target;
+        s.vel = 0;
+        setT(target);
+        s.raf = null;
+        return;
+      }
+
+      setT(s.pos);
+      s.raf = requestAnimationFrame(tick);
+    };
+
+    s.raf = requestAnimationFrame(tick);
+    return () => { if (s.raf) cancelAnimationFrame(s.raf); };
+  }, [target, stiffness, damping]);
+
+  return t;
+}
+
+// ---------------------------------------------------------------------------
+// GlobeArcs
+// ---------------------------------------------------------------------------
+export default function GlobeArcs({ onApexChange, zoomProgress = 0 }) {
   const apex = FIXED_APEX;
+  const t = useSpringT(zoomProgress);
 
   useEffect(() => {
     onApexChange?.(apex);
   }, []); // eslint-disable-line
+
+  const secondaryArcs = ARC_DEFS.filter(([,, tier]) => tier !== "middle");
+  const mainArcs      = ARC_DEFS.filter(([,, tier]) => tier === "middle");
 
   return (
     <svg x="270" y="-44" width="900" height="900" viewBox="0 0 900 900" overflow="visible">
@@ -146,16 +181,32 @@ export default function GlobeArcs({ onApexChange }) {
         </clipPath>
       </defs>
 
+      {/* Secondary arcs (inner + outer) — clipped, fade out on zoom */}
       <g clipPath="url(#planetClip)">
-        {ARC_DEFS.map(([id, side, tier, startX, startY, endX, endY, strokeWidth]) => {
-          const apexX = apex[side][tier];
-          const apexY = (startY + endY) / 2;
-          const d = makeArcPath(startX, startY, apexX, apexY, endX, endY);
+        {secondaryArcs.map(([id, side, tier, startX, startY, endX, endY, strokeWidth]) => {
+          const apexX   = apex[side][tier];
+          const apexY   = (startY + endY) / 2;
+          const opacity = lerp(1, 0, Math.min(1, t * 2));
+          const d       = makeArcPath(startX, startY, apexX, apexY, endX, endY);
           return (
-            <path key={id} d={d} stroke={`url(#${id})`} strokeWidth={strokeWidth} fill="none" />
+            <path key={id} d={d} stroke={`url(#${id})`} strokeWidth={strokeWidth} fill="none" opacity={opacity} />
           );
         })}
       </g>
+
+      {/* Main arcs (middle) — NOT clipped so translate can reach the viewport edges */}
+      {mainArcs.map(([id, side, , startX, startY, endX, endY, strokeWidth]) => {
+        const apexX       = apex[side].middle;
+        const apexY       = (startY + endY) / 2;
+        const morphedApexX = lerp(apexX, startX, t);
+        const shift        = side === "left" ? lerp(0, LEFT_HUG_SHIFT, t) : lerp(0, RIGHT_HUG_SHIFT, t);
+        const d            = makeArcPath(startX, startY, morphedApexX, apexY, endX, endY);
+        return (
+          <g key={id} transform={`translate(${shift}, 0)`}>
+            <path d={d} stroke={`url(#${id})`} strokeWidth={strokeWidth} fill="none" />
+          </g>
+        );
+      })}
     </svg>
   );
 }
