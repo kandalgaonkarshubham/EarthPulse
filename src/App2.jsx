@@ -4,6 +4,7 @@ import FilterCornersUI from "@/components/v2/FilterCornersUI";
 import Loader from "@/components/Loader";
 import Error from "@/components/Error";
 import Map from "@/components/Map";
+import EQModalNew from "@/components/EQModalNew";
 import { useFilterContext } from "@/context/Filter";
 
 export default function App() {
@@ -21,6 +22,9 @@ export default function App() {
     setSelectedFilters,
     selectedTimeRange,
     setSelectedTimeRange,
+    selectedEarthquake,
+    isModalOpen,
+    setIsModalOpen,
   } = useFilterContext();
 
   const [search, setSearch] = useState("");
@@ -139,6 +143,14 @@ export default function App() {
           selectedFilters={selectedFilters}
         />
       </div>
+
+      {selectedEarthquake && (
+        <EQModalNew
+          quake={selectedEarthquake}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

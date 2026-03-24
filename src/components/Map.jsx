@@ -4,7 +4,7 @@ import debounce from "lodash.debounce";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import EQModal from "./EQModal";
+import EQModalNew from "./EQModalNew";
 
 import { useFilterContext } from "@/context/Filter";
 
@@ -23,6 +23,10 @@ export default function Map() {
     setLocation,
     setHemisphere,
     setMapZoom,
+    selectedEarthquake,
+    setSelectedEarthquake,
+    isModalOpen,
+    setIsModalOpen,
   } = useFilterContext();
 
   const [filteredEarthquakes, setFilteredEarthquakes] = useState(earthquakes);
@@ -31,8 +35,6 @@ export default function Map() {
   const mapRef = useRef(null);
   const lastCoordsRef = useRef({ lng: 0, lat: 0 });
 
-  const [selectedEarthquake, setSelectedEarthquake] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const handleModalChange = (e) => setIsModalOpen(e);
 
   useEffect(() => {
@@ -240,8 +242,12 @@ export default function Map() {
       });
 
       map.on("click", "unclustered-point", (e) => {
-        const earthquake = e.features[0];
-        const coordinates = earthquake.geometry.coordinates.slice(0, 2);
+        const clickedFeature = e.features[0];
+        // Mapbox strips the Z coordinate (depth) from rendered features.
+        // We find the original feature in our data by 'code' to get the full coordinates and ID.
+        const earthquake = earthquakes.find(q => q.properties.code === clickedFeature.properties.code) || clickedFeature;
+        
+        const coordinates = clickedFeature.geometry.coordinates.slice(0, 2);
         map.easeTo({
           center: coordinates,
           zoom: 8,
@@ -256,40 +262,31 @@ export default function Map() {
           })
             .setLngLat(coordinates)
             .setHTML(
-              `<div class="eq-popup-container">
-                <div class="eq-popup-content">
-                  <div class="eq-popup-header">
-                    <h3 class="eq-popup-title">${earthquake.properties.title}</h3>
-                    <div class="eq-popup-badge" style="background: ${getMagnitudeColor(earthquake.properties.mag)};">M${earthquake.properties.mag}</div>
-                  </div>
-                  <div class="eq-popup-body">
-                    <div class="eq-popup-row">
-                      <span class="eq-popup-label">Magnitude:</span>
-                      <span class="eq-popup-value font-mono">${earthquake.properties.mag}</span>
-                    </div>
-                    <div class="eq-popup-row">
-                      <span class="eq-popup-label">Location:</span>
-                      <span class="eq-popup-value">${earthquake.properties.place}</span>
-                    </div>
-                    <div class="eq-popup-row">
-                      <span class="eq-popup-label">Depth:</span>
-                      <span class="eq-popup-value">${(earthquake.geometry.coordinates[2] || 0).toFixed(1)} km</span>
+              `<div class="eq-popover">
+                <div class="eq-popover-inner">
+                  <div class="eq-popover-magnitude-section" style="margin-top: 10px;">
+                    <div class="eq-popover-label">MAGNITUDE</div>
+                    <div class="eq-popover-magnitude" style="color: ${getMagnitudeColor(earthquake.properties.mag)};">
+                      ${earthquake.properties.mag.toFixed(1)} <span class="eq-popover-magnitude-unit">${earthquake.properties.magType?.toUpperCase() || 'ML'}</span>
                     </div>
                   </div>
-                  <button class="readmore eq-popup-button">
-                    <span>Read More</span>
-                    <span class="eq-popup-arrow">→</span>
-                  </button>
+                  <div class="eq-popover-location-section">
+                    <div class="eq-popover-location-text" style="font-size: 14px; margin-bottom: 0;">${earthquake.properties.place}</div>
+                  </div>
+                  <div class="eq-popover-footer" style="margin-top: 15px;">
+                    <button class="readmore eq-popover-read-more" style="width: 100%; justify-content: center; background: rgba(0, 185, 129, 0.1); border-color: #00B981; color: #00B981;">
+                      READ MORE <span style="margin-left: 4px;">→</span>
+                    </button>
+                  </div>
                 </div>
               </div>`
             )
             .addTo(map);
 
           function getMagnitudeColor(mag) {
-            if (mag < 3) return 'rgba(238, 215, 161, 0.6)';
-            if (mag < 5) return 'rgba(132, 205, 238, 0.6)';
-            if (mag < 7) return 'rgba(255, 188, 218, 0.6)';
-            return 'rgba(235, 45, 58, 0.6)';
+            if (mag < 3) return '#FF9D00';
+            if (mag < 5) return '#FF6B35';
+            return '#FF0000';
           }
 
           setSelectedEarthquake(earthquake);
@@ -361,13 +358,6 @@ export default function Map() {
   return (
     <div className="w-full h-full relative overflow-hidden">
       <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
-      {selectedEarthquake && isModalOpen && (
-        <EQModal
-          quake={selectedEarthquake}
-          isModalOpen={isModalOpen}
-          handleModalChange={handleModalChange}
-        />
-      )}
     </div>
   );
 }

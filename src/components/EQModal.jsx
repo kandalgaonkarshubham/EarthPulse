@@ -26,7 +26,7 @@ export default function EQModal({ quake, isModalOpen, handleModalChange }) {
         },
         {
           label: "Event IDs",
-          value: data.ids.split(",").filter(Boolean).join(","),
+          value: (data?.ids || "").split(",").filter(Boolean).join(","),
           content:
             "Identifiers of this earthquake in different seismic networks.",
         },
@@ -94,7 +94,7 @@ export default function EQModal({ quake, isModalOpen, handleModalChange }) {
         },
         {
           label: "Data Sources",
-          value: data.sources
+          value: (data?.sources || "")
             .split(",")
             .filter(Boolean)
             .join(",")
@@ -111,6 +111,18 @@ export default function EQModal({ quake, isModalOpen, handleModalChange }) {
   const magnitudeColor = quake.properties.mag < 3 ? '#eed7a1' : 
                           quake.properties.mag < 5 ? '#84cdee' : 
                           quake.properties.mag < 7 ? '#ffbcda' : '#eb2d3a';
+
+  // Calculate magnitude intensity for visualization (0-10 scale)
+  const magnitudeIntensity = Math.min(quake.properties.mag / 10 * 100, 100);
+  
+  // Get intensity level description
+  const getIntensityLabel = (mag) => {
+    if (mag < 2) return 'Minor';
+    if (mag < 4) return 'Light';
+    if (mag < 5.5) return 'Moderate';
+    if (mag < 7) return 'Strong';
+    return 'Severe';
+  };
 
   return (
     <AlertDialog open={isModalOpen} onOpenChange={handleModalChange}>
@@ -132,7 +144,23 @@ export default function EQModal({ quake, isModalOpen, handleModalChange }) {
                 </div>
               </div>
             </div>
-            <div className="eq-modal-divider" />
+            
+            {/* Energy Intensity Bar */}
+            <div className="eq-modal-intensity-container">
+              <div className="eq-modal-intensity-label">
+                <span className="eq-modal-intensity-text">INTENSITY</span>
+                <span className="eq-modal-intensity-value">{getIntensityLabel(quake.properties.mag)}</span>
+              </div>
+              <div className="eq-modal-intensity-bar">
+                <div 
+                  className="eq-modal-intensity-fill"
+                  style={{ 
+                    width: `${magnitudeIntensity}%`,
+                    backgroundColor: magnitudeColor
+                  }}
+                />
+              </div>
+            </div>
           </AlertDialogHeader>
 
           {/* Data Sections */}
