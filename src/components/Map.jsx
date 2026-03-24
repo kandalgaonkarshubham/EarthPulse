@@ -22,7 +22,7 @@ export default function Map() {
     resetMap,
     setLocation,
     setHemisphere,
-    setMapZoom,   // ← NEW
+    setMapZoom,
   } = useFilterContext();
 
   const [filteredEarthquakes, setFilteredEarthquakes] = useState(earthquakes);
@@ -40,7 +40,8 @@ export default function Map() {
 
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
+      // style: "mapbox://styles/mapbox/dark-v11",
+      style: "mapbox://styles/kandalgaonkarshubham/cmn47fztf001t01r28b4ncilt",
       center: [73.22969, 19.15705],
       zoom: 2,
       projection: "globe",
@@ -170,6 +171,7 @@ export default function Map() {
             750,
             40,
           ],
+          "circle-emissive-strength": 1,
         },
       });
       map.addLayer({
@@ -179,9 +181,14 @@ export default function Map() {
         filter: ["has", "point_count"],
         layout: {
           "text-field": ["get", "point_count_abbreviated"],
-          "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+          "text-font": ["Montserrat Alternates", "Arial Unicode MS Bold"],
           "text-size": 12,
         },
+        paint: {
+          "text-color": "#000000",
+          "text-halo-color": "rgba(255,255,255,0.7)",
+          "text-halo-width": 1,
+        }
       });
 
       map.addLayer({
@@ -212,6 +219,7 @@ export default function Map() {
           ],
           "circle-blur": 1,
           "circle-opacity": 0.7,
+          "circle-emissive-strength": 1,
         },
       });
 
@@ -248,15 +256,41 @@ export default function Map() {
           })
             .setLngLat(coordinates)
             .setHTML(
-              ` <div class="p-3 bg-black/80 border border-cyan-500/50 rounded-lg shadow-[0_0_15px_rgba(34,211,238,0.3)] backdrop-blur-md text-white font-sans">
-                  <h3 class="text-cyan-400 text-sm font-bold uppercase tracking-wider mb-2 border-b border-cyan-500/30 pb-1">${earthquake.properties.title}</h3>
-                  <p class="text-xs mb-1"><span class="text-gray-400">Magnitude:</span> <span class="text-white font-mono">${earthquake.properties.mag}</span></p>
-                  <p class="text-xs mb-3"><span class="text-gray-400">Location:</span> <span class="text-white">${earthquake.properties.place}</span></p>
-                  <button class="readmore w-full py-1.5 bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-500/50 rounded text-cyan-300 text-xs uppercase tracking-widest transition-colors">Read More</button>
+              `<div class="eq-popup-container">
+                <div class="eq-popup-content">
+                  <div class="eq-popup-header">
+                    <h3 class="eq-popup-title">${earthquake.properties.title}</h3>
+                    <div class="eq-popup-badge" style="background: ${getMagnitudeColor(earthquake.properties.mag)};">M${earthquake.properties.mag}</div>
+                  </div>
+                  <div class="eq-popup-body">
+                    <div class="eq-popup-row">
+                      <span class="eq-popup-label">Magnitude:</span>
+                      <span class="eq-popup-value font-mono">${earthquake.properties.mag}</span>
+                    </div>
+                    <div class="eq-popup-row">
+                      <span class="eq-popup-label">Location:</span>
+                      <span class="eq-popup-value">${earthquake.properties.place}</span>
+                    </div>
+                    <div class="eq-popup-row">
+                      <span class="eq-popup-label">Depth:</span>
+                      <span class="eq-popup-value">${(earthquake.geometry.coordinates[2] || 0).toFixed(1)} km</span>
+                    </div>
+                  </div>
+                  <button class="readmore eq-popup-button">
+                    <span>Read More</span>
+                    <span class="eq-popup-arrow">→</span>
+                  </button>
                 </div>
-              `
+              </div>`
             )
             .addTo(map);
+
+          function getMagnitudeColor(mag) {
+            if (mag < 3) return 'rgba(238, 215, 161, 0.6)';
+            if (mag < 5) return 'rgba(132, 205, 238, 0.6)';
+            if (mag < 7) return 'rgba(255, 188, 218, 0.6)';
+            return 'rgba(235, 45, 58, 0.6)';
+          }
 
           setSelectedEarthquake(earthquake);
           popup.getElement().addEventListener("click", () => {

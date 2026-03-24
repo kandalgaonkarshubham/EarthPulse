@@ -108,71 +108,123 @@ export default function EQModal({ quake, isModalOpen, handleModalChange }) {
 
   const groupedData = groupEarthquakeData(quake.properties);
 
+  const magnitudeColor = quake.properties.mag < 3 ? '#eed7a1' : 
+                          quake.properties.mag < 5 ? '#84cdee' : 
+                          quake.properties.mag < 7 ? '#ffbcda' : '#eb2d3a';
+
   return (
     <AlertDialog open={isModalOpen} onOpenChange={handleModalChange}>
-      <AlertDialogContent className="w-fit bg-black/90 border border-cyan-500/50 shadow-[0_0_30px_rgba(34,211,238,0.2)] text-white max-[847px]:max-h-[90vh] max-[847px]:!overflow-scroll backdrop-blur-xl rounded-xl">
-        <AlertDialogHeader className="overflow-x-scroll">
-          <AlertDialogTitle className="text-cyan-400 text-xl tracking-wider uppercase mb-4 border-b border-cyan-500/30 pb-2">
-            {quake.properties.title}
-          </AlertDialogTitle>
-          <div className="flex flex-col items-start justify-center p-1">
-            <div className="flex flex-col gap-2 overflow-x-scroll whitespace-nowrap w-full">
-              {groupedData.identifiers.map((item, index) => (
-                <InfoPopover
-                  key={index}
-                  label={item.label}
-                  value={item.value}
-                  content={item.content}
-                />
-              ))}
-              <div className="w-full h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent my-3" />
-              {groupedData.locationInfo.map((item, index) => (
-                <InfoPopover
-                  key={index}
-                  label={item.label}
-                  value={item.value}
-                  content={item.content}
-                />
-              ))}
-              <div className="w-full h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent my-3" />
-              {groupedData.magnitude.map((item, index) => (
-                <InfoPopover
-                  key={index}
-                  label={item.label}
-                  value={item.value}
-                  content={item.content}
-                />
-              ))}
-              <div className="w-full h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent my-3" />
-              {groupedData.timestamps.map((item, index) => (
-                <InfoPopover
-                  key={index}
-                  label={item.label}
-                  value={item.value}
-                  content={item.content}
-                />
-              ))}
-              <div className="w-full h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent my-3" />
-              {groupedData.details.map((item, index) => (
-                <InfoPopover
-                  key={index}
-                  label={item.label}
-                  value={item.value}
-                  content={item.content}
-                  url={item?.url}
-                />
-              ))}
+      <AlertDialogContent className="eq-modal-container">
+        <div className="eq-modal-backdrop" />
+        <div className="eq-modal-content">
+          {/* Header Section */}
+          <AlertDialogHeader className="eq-modal-header">
+            <div className="eq-modal-header-top">
+              <div className="eq-modal-title-section">
+                <AlertDialogTitle className="eq-modal-title">
+                  {quake.properties.title}
+                </AlertDialogTitle>
+                <div className="eq-modal-meta">
+                  <span className="eq-modal-magnitude" style={{ color: magnitudeColor }}>
+                    M{quake.properties.mag}
+                  </span>
+                  <span className="eq-modal-status">{quake.properties.status}</span>
+                </div>
+              </div>
+            </div>
+            <div className="eq-modal-divider" />
+          </AlertDialogHeader>
+
+          {/* Data Sections */}
+          <div className="eq-modal-scroll">
+            {/* Identifiers Section */}
+            <div className="eq-modal-section">
+              <h4 className="eq-modal-section-title">Identifiers</h4>
+              <div className="eq-modal-data-grid">
+                {groupedData.identifiers.map((item, index) => (
+                  <InfoPopover
+                    key={index}
+                    label={item.label}
+                    value={item.value}
+                    content={item.content}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Location Section */}
+            <div className="eq-modal-section">
+              <h4 className="eq-modal-section-title">Location Information</h4>
+              <div className="eq-modal-data-grid">
+                {groupedData.locationInfo.map((item, index) => (
+                  <InfoPopover
+                    key={index}
+                    label={item.label}
+                    value={item.value}
+                    content={item.content}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Magnitude Section */}
+            <div className="eq-modal-section">
+              <h4 className="eq-modal-section-title">Magnitude Data</h4>
+              <div className="eq-modal-data-grid">
+                {groupedData.magnitude.map((item, index) => (
+                  <InfoPopover
+                    key={index}
+                    label={item.label}
+                    value={item.value}
+                    content={item.content}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Timestamps Section */}
+            <div className="eq-modal-section">
+              <h4 className="eq-modal-section-title">Event Timeline</h4>
+              <div className="eq-modal-data-grid">
+                {groupedData.timestamps.map((item, index) => (
+                  <InfoPopover
+                    key={index}
+                    label={item.label}
+                    value={item.value}
+                    content={item.content}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Details Section */}
+            <div className="eq-modal-section">
+              <h4 className="eq-modal-section-title">Additional Details</h4>
+              <div className="eq-modal-data-grid">
+                {groupedData.details.map((item, index) => (
+                  <InfoPopover
+                    key={index}
+                    label={item.label}
+                    value={item.value}
+                    content={item.content}
+                    url={item?.url}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="mt-6">
-          <AlertDialogCancel
-            className="bg-transparent border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 transition-all duration-300 uppercase tracking-widest text-xs px-8"
-            onClick={() => handleModalChange(false)}
-          >
-            Close
-          </AlertDialogCancel>
-        </AlertDialogFooter>
+
+          {/* Footer */}
+          <AlertDialogFooter className="eq-modal-footer">
+            <AlertDialogCancel
+              className="eq-modal-button"
+              onClick={() => handleModalChange(false)}
+            >
+              <span>Close</span>
+              <span className="eq-modal-button-icon">✕</span>
+            </AlertDialogCancel>
+          </AlertDialogFooter>
+        </div>
       </AlertDialogContent>
     </AlertDialog>
   );
