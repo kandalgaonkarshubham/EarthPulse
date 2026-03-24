@@ -254,6 +254,15 @@ export default function Map() {
         });
 
         map.once("moveend", () => {
+          const eventTime = new Date(earthquake.properties.time);
+          const timeStr = eventTime.toLocaleString('en-US', { month: 'short', day: '2-digit' }).toUpperCase() + ' · ' + 
+                         eventTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+          const eventType = (earthquake.properties.type || "Seismic Event").toUpperCase();
+          const magValue = earthquake.properties.mag || 0;
+          const isHighMag = magValue >= 5.0;
+          const magColor = isHighMag ? "#ef4444" : "#f59e0b";
+          const magGlow = isHighMag ? "rgba(239, 68, 68, 0.5)" : "rgba(245, 158, 11, 0.4)";
+
           const popup = new mapboxgl.Popup({
             offset: 25,
             closeButton: false,
@@ -262,23 +271,28 @@ export default function Map() {
           })
             .setLngLat(coordinates)
             .setHTML(
-              `<div class="eq-popover">
-                <div class="eq-popover-inner">
-                  <div class="eq-popover-magnitude-section" style="margin-top: 10px;">
-                    <div class="eq-popover-label">MAGNITUDE</div>
-                    <div class="eq-popover-magnitude" style="color: ${getMagnitudeColor(earthquake.properties.mag)};">
-                      ${earthquake.properties.mag.toFixed(1)} <span class="eq-popover-magnitude-unit">${earthquake.properties.magType?.toUpperCase() || 'ML'}</span>
-                    </div>
-                  </div>
-                  <div class="eq-popover-location-section">
-                    <div class="eq-popover-location-text" style="font-size: 14px; margin-bottom: 0;">${earthquake.properties.place}</div>
-                  </div>
-                  <div class="eq-popover-footer" style="margin-top: 15px;">
-                    <button class="readmore eq-popover-read-more" style="width: 100%; justify-content: center; background: rgba(0, 185, 129, 0.1); border-color: #00B981; color: #00B981;">
-                      READ MORE <span style="margin-left: 4px;">→</span>
-                    </button>
-                  </div>
+              `<div class="glass-panel w-72 rounded-[2rem] p-6 shadow-2xl glass-highlight border-primary/20 bg-surface/80 font-body">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                  <span style="font-family: 'Space Grotesk', sans-serif; font-size: 9px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.3em; color: rgba(16, 185, 129, 0.8); text-shadow: 0 0 15px rgba(16, 185, 129, 0.5);">${eventType}</span>
+                  <span style="font-family: 'Space Grotesk', sans-serif; font-size: 9px; font-weight: 700; color: #4b5563;">${timeStr}</span>
                 </div>
+                
+                <div style="margin-bottom: 2px;">
+                  <span style="font-family: 'Space Grotesk', sans-serif; color: ${magColor}; font-weight: 900; font-size: 42px; line-height: 1; text-shadow: 0 0 15px ${magGlow};">${magValue.toFixed(1)}</span>
+                  <span style="font-family: 'Space Grotesk', sans-serif; color: ${magColor}; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.8; margin-left: 8px;">${earthquake.properties.magType?.toUpperCase() || 'MD'}</span>
+                </div>
+                
+                <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; line-height: 1.4; color: #f1f5f9; opacity: 0.9;">${earthquake.properties.place}</h3>
+                
+                <div style="border-top: 1px solid rgba(16, 185, 129, 0.1); margin: 20px 0 16px 0;"></div>
+                
+                <button class="readmore" style="width: 100%; padding: 4px 0; background: transparent; color: #10b981; font-family: 'Space Grotesk', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.2em; border: none; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                  ANALYZE TELEMETRY
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8">
+                    <line x1="7" y1="17" x2="17" x2="7"></line>
+                    <polyline points="7 7 17 7 17 17"></polyline>
+                  </svg>
+                </button>
               </div>`
             )
             .addTo(map);

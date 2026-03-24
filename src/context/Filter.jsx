@@ -26,9 +26,41 @@ export const FilterProvider = ({ children }) => {
   const [hemisphere, setHemisphere] = useState("");
   const [selectedEarthquake, setSelectedEarthquake] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
 
   // ── zoom level reported by Map.jsx ─────────────────────────────────────────
   const [mapZoom, setMapZoom] = useState(2);
+
+  useEffect(() => {
+    const fetchIPLocation = async () => {
+      try {
+        const response = await fetch("https://ipapi.co/json/");
+        const data = await response.json();
+        if (data.latitude && data.longitude) {
+          setUserLocation(prev => prev || {
+            lat: data.latitude,
+            lng: data.longitude,
+          });
+        }
+      } catch (err) {
+        console.log("IP Location error:", err);
+      }
+    };
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      }, (err) => {
+        console.log("Geolocation error:", err);
+        fetchIPLocation();
+      });
+    } else {
+      fetchIPLocation();
+    }
+  }, []);
 
   // ── screen width, updated on resize ──────────────────────────────────────
   const [screenWidth, setScreenWidth] = useState(
@@ -229,6 +261,8 @@ export const FilterProvider = ({ children }) => {
         setSelectedEarthquake,
         isModalOpen,
         setIsModalOpen,
+        userLocation,
+        setUserLocation,
       }}
     >
       {children}

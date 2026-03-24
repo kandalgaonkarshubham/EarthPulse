@@ -1,30 +1,20 @@
 /* eslint-disable react/prop-types */
-import { X, CheckCircle2, Radio } from 'lucide-react';
+import { X, CheckCircle2, Radio, Activity, Database, ArrowRight, MapPin } from 'lucide-react';
+import { useFilterContext } from "@/context/Filter";
 
 export default function EQModalNew({ quake, isOpen, onClose }) {
+  const { userLocation } = useFilterContext();
   if (!isOpen) return null;
 
   const mag = quake?.properties?.mag || 0;
   const place = quake?.properties?.place || "Unknown Location";
-   const eventCode = (quake?.id || quake?.properties?.code || quake?.properties?.ids?.split(',')[0] || "UNKNOWN").toUpperCase();
-  
-  // Get magnitude color
-  const getMagnitudeColor = () => {
-    if (mag < 3) return '#FF9D00'; // Orange for low
-    if (mag < 5) return '#FF6B35'; // Orange-red for medium
-    return '#FF0000'; // Red for high
-  };
+  const eventCode = (quake?.id || quake?.properties?.code || quake?.properties?.ids?.split(',')[0] || "UNKNOWN").toUpperCase();
 
   // Format dates
   const timeValue = quake?.properties?.time || Date.now();
-  const eventTime = new Date(timeValue).toLocaleString();
-  const eventDate = new Date(timeValue).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
+  const eventDate = new Date(timeValue).toLocaleString('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'medium'
   });
 
   // Get status based on review
@@ -32,143 +22,220 @@ export default function EQModalNew({ quake, isOpen, onClose }) {
     return quake?.properties?.status === 'reviewed' ? 'AUTOMATIC' : 'PENDING';
   };
 
+  // Helper to calculate distance (Haversine formula)
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Earth radius in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return (R * c).toFixed(1);
+  };
+
+  const getDistance = () => {
+    if (!userLocation || !quake?.geometry?.coordinates) return null;
+    return calculateDistance(
+      userLocation.lat,
+      userLocation.lng,
+      quake.geometry.coordinates[1],
+      quake.geometry.coordinates[0]
+    );
+  };
+
+  const distance = getDistance();
+  const isHighMag = mag >= 5.0;
+
   return (
-    <div className="eq-modal-overlay" onClick={onClose}>
-      <div className="eq-modal-new" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="eq-modal-new-header">
-          <div className="eq-modal-new-header-left">
-            <div className="eq-modal-new-icon">
-              <Radio size={20} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 backdrop-blur-xl transition-all duration-500" onClick={onClose}>
+      <div
+        className="relative glass-panel max-w-5xl w-full max-h-[92vh] overflow-hidden rounded-[2rem] md:rounded-[3rem] shadow-[0_0_150px_rgba(0,0,0,1)] flex flex-col glass-highlight border-primary/10 font-body"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Modal Header */}
+        <div className="px-6 md:px-10 py-6 md:py-8 border-b border-primary/5 flex justify-between items-center bg-primary/[0.02]">
+          <div className="flex items-center gap-4 md:gap-6">
+            <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-primary/10 flex items-center justify-center emerald-border glass-highlight shadow-[0_0_30px_rgba(16,185,129,0.1)]">
+              <Radio className="text-primary w-6 h-6 md:w-7 md:h-7 rich-glow-emerald" />
             </div>
-            <div className="eq-modal-new-title-section">
-              <h2 className="eq-modal-new-title">EVENT ID: {eventCode}</h2>
-              <p className="eq-modal-new-subtitle">{(quake?.properties?.sources || "").replace(/,/g, ' ').trim().toUpperCase()} NETWORK — {(quake?.properties?.net || "").toUpperCase()}</p>
+            <div>
+              <h2 className="font-headline text-lg md:text-2xl font-bold text-on-surface tracking-[0.05em] uppercase rich-glow-emerald">EVENT ID: {eventCode}</h2>
+              <p className="text-[8px] md:text-[10px] font-headline font-bold text-slate-500 tracking-[0.3em] uppercase mt-1">
+                {(quake?.properties?.sources || "").replace(/,/g, ' ').trim().toUpperCase()} NETWORK — {(quake?.properties?.net || "").toUpperCase()} FEED
+              </p>
             </div>
           </div>
-          <button className="eq-modal-new-close" onClick={onClose}>
-            <X size={24} />
+          <button
+            className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 flex items-center justify-center border border-white/5 hover:bg-white/10 transition-all text-slate-500 hover:text-white shadow-inner"
+            onClick={onClose}
+          >
+            <X className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="eq-modal-new-content">
-          {/* Top Row - Three Cards */}
-          <div className="eq-modal-new-grid-top">
-            {/* Magnitude Card - Teal */}
-            <div className="eq-modal-new-card eq-modal-new-card-magnitude">
-              <div className="eq-modal-new-card-label">MAGNITUDE ({quake?.properties?.magType?.toUpperCase() || 'ML'})</div>
-              <div className="eq-modal-new-magnitude-display">{mag.toFixed(1)}</div>
+        {/* Modal Content */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-transparent scrollbar-thin">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
+            {/* Main Stats */}
+            <div className="lg:col-span-2 space-y-8 md:space-y-10">
+              {/* Magnitude & Status Section */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                {/* Magnitude Box */}
+                <div className={`md:col-span-2 ${isHighMag ? 'bg-red-900/10 border-red-500/30' : 'bg-emerald-900/5 border-primary/20'} p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border glass-highlight flex flex-col justify-center items-center relative overflow-hidden bg-gradient-to-br transition-colors duration-500 ${isHighMag ? 'from-red-500/10' : 'from-primary/10'} to-transparent`}>
+                  <div className="absolute top-0 right-0 p-4 md:p-6 opacity-10">
+                    <Activity className={`w-16 h-16 md:w-20 md:h-20 ${isHighMag ? 'text-red-500' : 'text-primary'}`} />
+                  </div>
+                  <div className={`text-[8px] md:text-[9px] font-headline ${isHighMag ? 'text-red-500 rich-glow-red' : 'text-primary rich-glow-emerald'} uppercase font-bold tracking-[0.4em] mb-2 md:mb-4`}>
+                    MAGNITUDE SCALE
+                   </div>
+                  <div className={`font-headline text-7xl md:text-9xl font-black text-white leading-none tracking-tighter ${isHighMag ? 'rich-glow-red drop-shadow-[0_0_40px_rgba(239,68,68,0.4)]' : 'rich-glow-emerald drop-shadow-[0_0_40px_rgba(16,185,129,0.4)]'}`}>
+                    {mag.toFixed(1)}
+                  </div>
+                  <div className="mt-4 md:mt-6 flex gap-3">
+                    <div className="h-[3px] w-32 bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${isHighMag ? 'bg-red-500/80 shadow-[0_0_10px_rgba(239,68,68,0.6)]' : 'bg-primary/80 shadow-[0_0_10px_rgba(16,185,129,0.6)]'} animate-pulse`}
+                        style={{ width: `${Math.min((mag / 10) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Event Status Box */}
+                <div className="bg-amber-900/5 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-secondary/20 glass-highlight flex flex-col justify-center items-center text-center bg-gradient-to-br from-secondary/10 to-transparent">
+                  <div className="text-[8px] md:text-[9px] font-headline text-secondary uppercase font-bold tracking-[0.4em] mb-4 md:mb-6 rich-glow-amber text-nowrap">Event Status</div>
+                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-secondary/10 flex items-center justify-center mb-4 md:mb-5 gold-border shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                    <CheckCircle2 className="w-8 h-8 md:w-10 md:h-10 text-secondary pulse-amber" />
+                  </div>
+                  <div className="font-headline text-xl md:text-2xl font-bold text-white uppercase tracking-widest rich-glow-amber">
+                    {getStatus()}
+                  </div>
+                  <div className="text-[7px] md:text-[8px] font-headline text-slate-500 mt-3 md:mt-4 uppercase font-bold tracking-[0.2em] leading-relaxed">
+                    Significance: {quake?.properties?.sig ?? "N/A"}<br/>
+                    RMS Error: {quake?.properties?.rms ?? "N/A"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Details Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                <div className="bg-surface/40 p-5 md:p-6 rounded-xl md:rounded-2xl border border-primary/10 glass-highlight group hover:border-primary/40 transition-all hover:bg-surface/60">
+                  <div className="text-[8px] md:text-[9px] font-headline text-slate-600 uppercase font-bold tracking-[0.3em] mb-2">Global Location</div>
+                  <div className="font-headline text-on-surface font-bold text-sm md:text-base tracking-tight">{place}</div>
+                  <div className="text-[9px] md:text-[10px] font-headline text-primary mt-3 font-bold rich-glow-emerald tracking-wide">
+                    {(quake?.geometry?.coordinates?.[1] ?? 0).toFixed(4)}°N {Math.abs(quake?.geometry?.coordinates?.[0] ?? 0).toFixed(4)}°W
+                  </div>
+                </div>
+
+                <div className="bg-surface/40 p-5 md:p-6 rounded-xl md:rounded-2xl border border-secondary/10 glass-highlight group hover:border-secondary/40 transition-all hover:bg-surface/60">
+                  <div className="text-[8px] md:text-[9px] font-headline text-slate-600 uppercase font-bold tracking-[0.3em] mb-2">Telemetry Timestamp</div>
+                  <div className="font-headline text-on-surface font-bold text-sm md:text-base tracking-tight">{eventDate}</div>
+                  <div className="text-[9px] md:text-[10px] font-headline text-secondary mt-3 font-bold uppercase tracking-[0.2em]">EPOCH: {quake?.properties?.time || "N/A"}</div>
+                </div>
+
+                <div className="bg-surface/40 p-5 md:p-6 rounded-xl md:rounded-2xl border border-tertiary/10 glass-highlight group hover:border-tertiary/40 transition-all hover:bg-surface/60">
+                  <div className="text-[8px] md:text-[9px] font-headline text-slate-600 uppercase font-bold tracking-[0.3em] mb-2">Focal Depth</div>
+                  <div className="font-headline text-2xl md:text-3xl text-tertiary font-black rich-glow-copper tracking-tighter">
+                    {(quake?.geometry?.coordinates?.[2] ?? 0).toFixed(2)} <span className="text-[10px] md:text-xs font-bold text-slate-600 tracking-normal ml-1">KM</span>
+                  </div>
+                  <div className="text-[8px] md:text-[9px] font-headline text-slate-600 mt-2 uppercase font-bold tracking-[0.2em]">
+                    Status: {
+                      (quake?.geometry?.coordinates?.[2] ?? 0) <= 70 ? 'Shallow Depth Event' :
+                      (quake?.geometry?.coordinates?.[2] ?? 0) <= 300 ? 'Intermediate Depth Event' : 'Deep Crustal Event'
+                    }
+                  </div>
+                </div>
+
+                <div className="bg-surface/40 p-5 md:p-6 rounded-xl md:rounded-2xl border border-primary/10 glass-highlight group hover:border-primary/40 transition-all hover:bg-surface/60">
+                  <div className="text-[8px] md:text-[9px] font-headline text-slate-600 uppercase font-bold tracking-[0.3em] mb-2">Magnitude Type</div>
+                  <div className="font-headline text-2xl md:text-3xl text-primary font-black uppercase tracking-tighter rich-glow-emerald">
+                    {(quake?.properties?.magType || "N/A").toUpperCase()}
+                  </div>
+                  <div className="text-[8px] md:text-[9px] font-headline text-slate-600 mt-2 uppercase font-bold tracking-[0.2em]">
+                    {
+                      {
+                        'md': 'Duration Magnitude',
+                        'ml': 'Local Magnitude',
+                        'ms': 'Surface-wave Magnitude',
+                        'mw': 'Moment Magnitude',
+                        'me': 'Energy Magnitude',
+                        'mi': 'Moment Magnitude',
+                        'mb': 'Body-wave Magnitude',
+                        'mww': 'W-phase Moment Magnitude',
+                        'mwb': 'Body-wave Moment Magnitude',
+                        'mwc': 'Centroid Moment Magnitude',
+                        'mwr': 'Regional Moment Magnitude'
+                      }[quake?.properties?.magType?.toLowerCase()] || (quake?.properties?.magType?.toUpperCase() + ' Magnitude')
+                    }
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Status Card - Orange */}
-            <div className="eq-modal-new-card eq-modal-new-card-status">
-              <div className="eq-modal-new-card-label">EVENT STATUS</div>
-              <div className="eq-modal-new-status-icon">
-                <CheckCircle2 size={32} />
+            {/* Sidebar Info */}
+            <div className="space-y-6 md:space-y-8">
+              {/* Array Analytics Panel */}
+              <div className="glass-panel p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-primary/10 bg-surface/40 glass-highlight shadow-xl">
+                <h4 className="font-headline text-[9px] md:text-[10px] font-bold text-primary uppercase tracking-[0.3em] mb-6 md:mb-8 rich-glow-emerald border-b border-primary/10 pb-4">Array Analytics</h4>
+                <ul className="space-y-4 md:space-y-6">
+                  <li className="flex justify-between items-center">
+                    <span className="text-[8px] md:text-[9px] font-headline text-slate-600 uppercase font-bold tracking-[0.2em]">Active Nodes</span>
+                    <span className="text-[10px] md:text-xs font-headline font-bold text-on-surface">{quake?.properties?.nst ?? 18} Stations</span>
+                  </li>
+                  <li className="flex justify-between items-center">
+                    <span className="text-[8px] md:text-[9px] font-headline text-slate-600 uppercase font-bold tracking-[0.2em]">Gap Aperture</span>
+                    <span className="text-[10px] md:text-xs font-headline font-bold text-on-surface">{(quake?.properties?.gap ?? 128.0).toFixed(1)}°</span>
+                  </li>
+                  <li className="flex justify-between items-center">
+                    <span className="text-[8px] md:text-[9px] font-headline text-slate-600 uppercase font-bold tracking-[0.2em]">Min Distance</span>
+                    <span className="text-[10px] md:text-xs font-headline font-bold text-primary rich-glow-emerald">{(quake?.properties?.dmin ?? 0.0105).toFixed(4)}°</span>
+                  </li>
+                  <li className="flex justify-between items-center">
+                    <span className="text-[8px] md:text-[9px] font-headline text-slate-600 uppercase font-bold tracking-[0.2em]">Seismic Type</span>
+                    <span className="text-[10px] md:text-xs font-headline font-bold text-on-surface">{(quake?.properties?.type || "unknown").toUpperCase()}</span>
+                  </li>
+                </ul>
               </div>
-              <div className="eq-modal-new-status-text">{getStatus()}</div>
-              <div className="eq-modal-new-status-meta">
-                SIGNIFICANCE: {quake?.properties?.sig ?? "N/A"}<br/>RMS ERROR: {quake?.properties?.rms ?? "N/A"}
-              </div>
-            </div>
 
-            {/* Analytics Card */}
-            <div className="eq-modal-new-card eq-modal-new-card-analytics">
-              <div className="eq-modal-new-card-label">ARRAY ANALYTICS</div>
-              <div className="eq-modal-new-analytics-item">
-                <span className="eq-modal-new-analytics-label">ACTIVE MODES</span>
-                <span className="eq-modal-new-analytics-value">18 Stations</span>
-              </div>
-              <div className="eq-modal-new-analytics-item">
-                <span className="eq-modal-new-analytics-label">GAP APERTURE</span>
-                <span className="eq-modal-new-analytics-value">{(quake?.properties?.gap ?? 128).toFixed(1)}°</span>
-              </div>
-              <div className="eq-modal-new-analytics-item">
-                <span className="eq-modal-new-analytics-label">MIN DISTANCE</span>
-                <span className="eq-modal-new-analytics-value">{(quake?.properties?.dmin ?? 0.0105).toFixed(4)}°</span>
-              </div>
-              <div className="eq-modal-new-analytics-item">
-                <span className="eq-modal-new-analytics-label">CONFIDENCE</span>
-                <span className="eq-modal-new-analytics-value">Tier 3 (High)</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Middle Row - Data Cards */}
-          <div className="eq-modal-new-grid-middle">
-            {/* Global Location */}
-            <div className="eq-modal-new-card eq-modal-new-card-small">
-              <div className="eq-modal-new-card-label">GLOBAL LOCATION</div>
-              <div className="eq-modal-new-location-text">{place}</div>
-              <div className="eq-modal-new-location-coords">
-                {(quake?.geometry?.coordinates?.[1] ?? 0).toFixed(4)}°N {Math.abs(quake?.geometry?.coordinates?.[0] ?? 0).toFixed(4)}°W
-              </div>
-            </div>
-
-            {/* Telemetry */}
-            <div className="eq-modal-new-card eq-modal-new-card-small">
-              <div className="eq-modal-new-card-label">TELEMETRY TIMESTAMP</div>
-              <div className="eq-modal-new-timestamp">{eventDate}</div>
-              <div className="eq-modal-new-epoch">
-                EPOCH: {quake?.properties?.time || "N/A"}
-              </div>
-            </div>
-
-            {/* Seismic Event Type */}
-            <div className="eq-modal-new-card eq-modal-new-card-small">
-              <div className="eq-modal-new-card-label">EVENT TYPE</div>
-              <div className="eq-modal-new-location-text">{(quake?.properties?.type || "N/A").toUpperCase()}</div>
-              <div className="eq-modal-new-magtype-desc">
-                Seismic Classification
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Row - More Data Cards */}
-          <div className="eq-modal-new-grid-bottom">
-            {/* Focal Depth */}
-            <div className="eq-modal-new-card eq-modal-new-card-small">
-              <div className="eq-modal-new-card-label">FOCAL DEPTH</div>
-              <div className="eq-modal-new-depth-value">{(quake?.geometry?.coordinates?.[2] ?? 0).toFixed(2)}</div>
-              <div className="eq-modal-new-depth-unit">KM</div>
-            </div>
-
-            {/* Magnitude Type */}
-            <div className="eq-modal-new-card eq-modal-new-card-small">
-              <div className="eq-modal-new-card-label">MAGNITUDE TYPE</div>
-              <div className="eq-modal-new-magtype">{quake?.properties?.magType?.toUpperCase() || 'N/A'}</div>
-              <div className="eq-modal-new-magtype-desc">
-                Source: {quake?.properties?.net?.toUpperCase() || 'USGS'}
-              </div>
-            </div>
-
-            {/* Verified Source */}
-            <div className="eq-modal-new-card eq-modal-new-card-verified">
-              <div className="eq-modal-new-card-label">VERIFIED SOURCE</div>
-              <p className="eq-modal-new-verified-text">
-                COMPLETE EVENT DATA<br/>
-                PROVIDED BY USGS
-              </p>
-              <button 
-                className="eq-modal-new-archive-link"
+              {/* External Source Link */}
+              <div
+                className="p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] bg-gradient-to-br from-secondary/15 to-tertiary/5 border border-secondary/20 glass-highlight group cursor-pointer shadow-xl hover:from-secondary/20 hover:to-tertiary/10 transition-all"
                 onClick={() => window.open(quake?.properties?.url, '_blank')}
               >
-                EVENT PAGE →
-              </button>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[8px] md:text-[9px] font-headline text-secondary font-bold tracking-[0.4em] uppercase rich-glow-amber">Verified Source</span>
+                  <Database className="w-4 h-4 text-secondary" />
+                </div>
+                <p className="text-[8px] md:text-[9px] text-slate-500 font-headline font-medium mb-6 uppercase tracking-[0.2em] leading-relaxed">
+                  Full Geological Context accessible via United States Geological Survey
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="font-headline font-black text-secondary uppercase tracking-[0.3em] text-[10px] group-hover:underline rich-glow-amber text-nowrap">USGS EVENT PAGE</span>
+                  <ArrowRight className="w-5 h-5 text-secondary group-hover:translate-x-2 transition-transform" />
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Footer Status */}
-          <div className="eq-modal-new-footer-status">
-            <div className="eq-modal-new-status-indicator">
-              <span className="eq-modal-new-status-dot"></span>
-              EVENT TYPE: {(quake?.properties?.type || "unknown").toUpperCase()}
-            </div>
-            <div className="eq-modal-new-status-indicator">
-              TSUNAMI WARNING: {quake?.properties?.tsunami === 1 ? "ACTIVE" : "NONE"}
+        {/* Modal Footer */}
+        <div className="px-6 md:px-10 py-6 md:py-8 border-t border-primary/5 bg-primary/[0.03] flex justify-between items-center">
+          <div className="flex items-center gap-6 md:gap-12 flex-wrap">
+            <div className="flex items-center gap-3 md:gap-4">
+              <span className={`w-2 h-2 md:w-3 md:h-3 rounded-full ${quake?.properties?.tsunami === 1 ? 'bg-secondary animate-pulse shadow-[0_0_15px_rgba(245,158,11,0.8)]' : 'bg-slate-800'}`}></span>
+              <span className="text-[7px] md:text-[9px] font-headline text-slate-600 uppercase font-black tracking-[0.4em]">
+                Tsunami: {quake?.properties?.tsunami === 1 ? 'ACTIVE WARNING' : 'NONE'}
+              </span>
             </div>
           </div>
+          {distance && (
+            <div className="flex items-center gap-2 md:gap-3 text-slate-600">
+              <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5 text-slate-700" />
+              <span className="text-[7px] md:text-[8px] font-headline uppercase font-bold tracking-[0.4em]">Approx {distance} km from your location</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

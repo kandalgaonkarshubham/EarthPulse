@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Quicksand:wght@300..700&family=Syne:wght@400..800&family=Space+Grotesk:wght@300..700&family=Inter:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Inter:wght@100..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -18,6 +18,18 @@ body {
 @layer base {
   :root {
     --radius: 0.5rem;
+    --background: #050705;
+    --surface: #0d110d;
+    --surface-bright: #1a1f1a;
+    --primary: #10b981;
+    --primary-container: #064e3b;
+    --secondary: #f59e0b;
+    --secondary-container: #78350f;
+    --tertiary: #ea580c;
+    --tertiary-container: #7c2d12;
+    --on-background: #e2e8f0;
+    --on-surface: #f1f5f9;
+    --outline: #3d4a3d;
   }
 }
 
@@ -1536,4 +1548,56 @@ body {
 
 .eq-modal-new-content::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, rgba(78, 222, 3, 0.6) 0%, rgba(0, 185, 129, 0.5) 100%);
+}
+
+/* ════════════════════════════════════════════════════════════════════ */
+/* ELEGANT STYLES FROM MOCKUP */
+/* ════════════════════════════════════════════════════════════════════ */
+
+.glass-panel {
+  background: rgba(13, 17, 13, 0.7);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.glass-highlight {
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.05), inset 0 0 15px rgba(255, 255, 255, 0.02);
+}
+
+.rich-glow-emerald {
+  text-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+}
+
+.rich-glow-amber {
+  text-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+}
+
+.rich-glow-copper {
+  text-shadow: 0 0 15px rgba(234, 88, 12, 0.4);
+}
+
+.rich-glow-red {
+  text-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+}
+
+.vibrant-gradient {
+  background: linear-gradient(135deg, #0d110d 0%, #1a1f1a 100%);
+}
+
+.pulse-amber {
+  animation: pulse-amb 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-amb {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+
+.gold-border {
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
+.emerald-border {
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
