@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { createRoot } from "react-dom/client";
 import debounce from "lodash.debounce";
 
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import EQModalNew from "./EQModalNew";
+import EarthquakePopup from "./EarthquakePopup";
 
 import { useFilterContext } from "@/context/Filter";
 
@@ -246,7 +247,7 @@ export default function Map() {
         // Mapbox strips the Z coordinate (depth) from rendered features.
         // We find the original feature in our data by 'code' to get the full coordinates and ID.
         const earthquake = earthquakes.find(q => q.properties.code === clickedFeature.properties.code) || clickedFeature;
-        
+
         const coordinates = clickedFeature.geometry.coordinates.slice(0, 2);
         map.easeTo({
           center: coordinates,
@@ -255,7 +256,7 @@ export default function Map() {
 
         map.once("moveend", () => {
           const eventTime = new Date(earthquake.properties.time);
-          const timeStr = eventTime.toLocaleString('en-US', { month: 'short', day: '2-digit' }).toUpperCase() + ' · ' + 
+          const timeStr = eventTime.toLocaleString('en-US', { month: 'short', day: '2-digit' }).toUpperCase() + ' · ' +
                          eventTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
           const eventType = (earthquake.properties.type || "Seismic Event").toUpperCase();
           const magValue = earthquake.properties.mag || 0;
@@ -268,44 +269,30 @@ export default function Map() {
             closeButton: false,
             closeOnMove: true,
             className: "futuristic-popup",
-          })
-            .setLngLat(coordinates)
-            .setHTML(
-              `<div class="glass-panel w-72 rounded-[2rem] p-6 shadow-2xl glass-highlight border-primary/20 bg-surface/80 font-body">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-                  <span style="font-family: 'Space Grotesk', sans-serif; font-size: 9px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.3em; color: rgba(16, 185, 129, 0.8); text-shadow: 0 0 15px rgba(16, 185, 129, 0.5);">${eventType}</span>
-                  <span style="font-family: 'Space Grotesk', sans-serif; font-size: 9px; font-weight: 700; color: #4b5563;">${timeStr}</span>
-                </div>
-                
-                <div style="margin-bottom: 2px;">
-                  <span style="font-family: 'Space Grotesk', sans-serif; color: ${magColor}; font-weight: 900; font-size: 42px; line-height: 1; text-shadow: 0 0 15px ${magGlow};">${magValue.toFixed(1)}</span>
-                  <span style="font-family: 'Space Grotesk', sans-serif; color: ${magColor}; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.8; margin-left: 8px;">${earthquake.properties.magType?.toUpperCase() || 'MD'}</span>
-                </div>
-                
-                <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; line-height: 1.4; color: #f1f5f9; opacity: 0.9;">${earthquake.properties.place}</h3>
-                
-                <div style="border-top: 1px solid rgba(16, 185, 129, 0.1); margin: 20px 0 16px 0;"></div>
-                
-                <button class="readmore" style="width: 100%; padding: 4px 0; background: transparent; color: #10b981; font-family: 'Space Grotesk', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.2em; border: none; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                  ANALYZE TELEMETRY
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8">
-                    <line x1="7" y1="17" x2="17" x2="7"></line>
-                    <polyline points="7 7 17 7 17 17"></polyline>
-                  </svg>
-                </button>
-              </div>`
-            )
-            .addTo(map);
+          }).setLngLat(coordinates);
 
-          function getMagnitudeColor(mag) {
-            if (mag < 3) return '#FF9D00';
-            if (mag < 5) return '#FF6B35';
-            return '#FF0000';
-          }
+          // Render React component into a temporary div
+          const popupNode = document.createElement("div");
+          const root = createRoot(popupNode);
+          root.render(
+            <EarthquakePopup
+              earthquake={earthquake}
+              timeStr={timeStr}
+              eventType={eventType}
+            />
+          );
+
+          popup.setDOMContent(popupNode).addTo(map);
 
           setSelectedEarthquake(earthquake);
+
           popup.getElement().addEventListener("click", () => {
             handleModalChange(true);
+          });
+
+          // Optional: Cleanup React root when popup is removed
+          popup.on("close", () => {
+            setTimeout(() => root.unmount(), 0);
           });
         });
       });

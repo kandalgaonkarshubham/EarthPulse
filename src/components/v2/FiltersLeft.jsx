@@ -56,10 +56,7 @@ export default function FiltersLeft({ selectedTimeRange, setSelectedTimeRange, a
             style={{ cursor: "pointer" }}
           >
             {isActive ? (
-              <>
-                <circle cx={marker.x} cy={marker.y} r="6" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1" />
-                <circle cx={marker.x} cy={marker.y} r="2" fill="white" filter="url(#dotGlow)" />
-              </>
+              <circle cx={marker.x} cy={marker.y} r="2.5" fill="#f59e0b" filter="url(#dotGlow)" />
             ) : (
               <circle cx={marker.x} cy={marker.y} r="1.5" fill="rgba(255,255,255,0.2)" />
             )}
@@ -67,7 +64,7 @@ export default function FiltersLeft({ selectedTimeRange, setSelectedTimeRange, a
               x={marker.x - 18}
               y={marker.y + 5}
               textAnchor="end"
-              fill={isActive ? "#ffffff" : "#6C7083"}
+              fill={isActive ? "#f59e0b" : "#6C7083"}
               fontSize={isActive ? 14 : 12}
               fontWeight={isActive ? 600 : 500}
               fontFamily="Roboto, sans-serif"

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { sampleArcAtY, ARC_DEFS, ARC_SVG_OFFSET, useSpringT, RIGHT_HUG_SHIFT } from "./FilterGlobeArcs";
+import { CheckCircle2 } from "lucide-react";
 
 function lerp(a, b, t) { return a + (b - a) * t; }
 
@@ -28,7 +29,6 @@ const FILTER_DATA = {
     options: [
       { label: "Yes",     value: "yes"     },
       { label: "No",      value: "no"      },
-      { label: "Unknown", value: "unknown" },
     ],
   },
   status: {
@@ -128,10 +128,7 @@ export default function FiltersRight({ selectedFilters, setSelectedFilters, apex
               style={{ cursor: "pointer" }}
             >
               {isActive ? (
-                <>
-                  <circle cx={marker.x} cy={marker.y} r="6" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1" />
-                  <circle cx={marker.x} cy={marker.y} r="2" fill="white" filter="url(#dotGlow)" />
-                </>
+                <circle cx={marker.x} cy={marker.y} r="2.5" fill="#f59e0b" filter="url(#dotGlow)" />
               ) : (
                 <circle cx={marker.x} cy={marker.y} r="1.5" fill="rgba(255,255,255,0.2)" />
               )}
@@ -139,7 +136,7 @@ export default function FiltersRight({ selectedFilters, setSelectedFilters, apex
                 x={marker.x + 18}
                 y={marker.y + 5}
                 textAnchor="start"
-                fill={isActive ? "#ffffff" : "#6C7083"}
+                fill={isActive ? "#f59e0b" : "#6C7083"}
                 fontSize={isActive ? 14 : 12}
                 fontWeight={isActive ? 600 : 500}
                 fontFamily="Roboto, sans-serif"
@@ -149,9 +146,9 @@ export default function FiltersRight({ selectedFilters, setSelectedFilters, apex
             </g>
 
             {isPopupOpen && (() => {
-              const popupWidth = 120;
-              const popupHeight = marker.options.length * 30 + 10;
-              
+              const popupWidth = 140;
+              const popupHeight = marker.options.length * 40 + 8;
+
               // Calculate horizontal position
               let popupX = marker.x + 80;
               if (popupX + popupWidth > 1430) { // 1440 - 10 margin
@@ -160,8 +157,8 @@ export default function FiltersRight({ selectedFilters, setSelectedFilters, apex
               }
 
               // Calculate vertical position
-              let popupY = marker.y - (marker.options.length * 15);
-              
+              let popupY = marker.y - (popupHeight / 2);
+
               // Clamp vertical to keep it within view
               if (popupY < 10) {
                 popupY = 10;
@@ -171,37 +168,51 @@ export default function FiltersRight({ selectedFilters, setSelectedFilters, apex
 
               return (
                 <g transform={`translate(${popupX}, ${popupY})`}>
-                  <rect x="-1000" y="-1000" width="2000" height="2000" fill="transparent" onClick={() => setPopupCategory(null)} />
-                  <rect
-                    width={popupWidth}
-                    height={popupHeight}
-                    fill="#171717"
-                    rx="8"
-                    stroke="rgba(255,255,255,0.1)"
-                    strokeWidth="1"
-                    filter="drop-shadow(0 10px 15px rgba(0,0,0,0.5))"
-                  />
-                  {marker.options.map((opt, i) => {
-                    const isOptSelected = selectedFilters[marker.key] === opt.value;
-                    return (
-                      <g
-                        key={opt.value}
-                        transform={`translate(10, ${i * 30 + 25})`}
-                        onClick={() => handleOptionClick(marker.key, opt.value)}
-                        style={{ cursor: "pointer" }}
+                  <rect x="-2000" y="-2000" width="5000" height="5000" fill="transparent" onClick={() => setPopupCategory(null)} />
+                  <foreignObject
+                    width={popupWidth + 60}
+                    height={popupHeight + 60}
+                    x="-30"
+                    y="-30"
+                    className="overflow-visible pointer-events-none"
+                  >
+                    <div className="p-[30px] pointer-events-auto">
+                      <div
+                        className="glass-panel rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden animate-[popoverSlide_0.3s_ease-out]"
+                        style={{ width: popupWidth, minHeight: popupHeight }}
                       >
-                        <rect x="-5" y="-15" width="110" height="25" fill={isOptSelected ? "rgba(255,255,255,0.1)" : "transparent"} rx="4" />
-                        <text
-                          fill={isOptSelected ? "#ffffff" : "#A3A3A3"}
-                          fontSize="12"
-                          fontFamily="Roboto, sans-serif"
-                          fontWeight={isOptSelected ? 600 : 400}
-                        >
-                          {opt.label}
-                        </text>
-                      </g>
-                    );
-                  })}
+                        <div className="p-2 space-y-1">
+                          {marker.options.map((opt) => {
+                            const isOptSelected = selectedFilters[marker.key] === opt.value;
+                            return (
+                              <div
+                                key={opt.value}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOptionClick(marker.key, opt.value);
+                                }}
+                                className={`
+                                  px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 flex items-center justify-between group
+                                  ${isOptSelected
+                                    ? "bg-secondary/20 text-white border border-secondary/30"
+                                    : "text-slate-400 hover:bg-white/5 hover:text-white border border-transparent"}
+                                `}
+                              >
+                                <span className={`text-[11px] font-bold tracking-wide uppercase font-mono ${isOptSelected ? 'rich-glow-amber' : ''}`}>
+                                  {opt.label}
+                                </span>
+                                {isOptSelected ? (
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-secondary" />
+                                ) : (
+                                  <div className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover:bg-slate-500 transition-colors" />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </foreignObject>
                 </g>
               );
             })()}

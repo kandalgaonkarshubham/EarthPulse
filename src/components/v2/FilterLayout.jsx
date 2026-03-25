@@ -12,6 +12,21 @@ export default function FilterLayout({
 }) {
   const [apex, setApex] = useState(null);
   const { zoomProgress } = useFilterContext();
+  const isLeftActive = !!selectedTimeRange && selectedTimeRange !== "all";
+  const isRightActive = Object.values(selectedFilters || {}).some((v) => !!v);
+
+  // Map the selected time range to its corresponding marker Y coordinate
+  const activeLeftYs = isLeftActive 
+    ? [266, 338, 410, 482, 554][["1h", "2h", "6h", "12h", "24h"].indexOf(selectedTimeRange)]
+    : null;
+    
+  // Map all active filters to their category marker Y coordinates
+  const activeRightYs = isRightActive
+    ? [270, 326, 382, 438, 494, 550].filter((_, i) => {
+        const keys = ["magnitude", "significance", "tsunami", "status", "alert", "type"];
+        return !!selectedFilters[keys[i]];
+      })
+    : [];
 
   const handleApexChange = useCallback((newApex) => {
     setApex(newApex);
@@ -37,7 +52,14 @@ export default function FilterLayout({
         </defs>
 
         {/* GlobeArcs drives the apex state and notifies parent */}
-        <GlobeArcs onApexChange={handleApexChange} zoomProgress={zoomProgress} />
+        <GlobeArcs
+          onApexChange={handleApexChange}
+          zoomProgress={zoomProgress}
+          isLeftActive={isLeftActive}
+          isRightActive={isRightActive}
+          activeLeftYs={activeLeftYs ? [activeLeftYs] : []}
+          activeRightYs={activeRightYs}
+        />
 
         <g className="pointer-events-auto">
           <FiltersLeft

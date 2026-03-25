@@ -151,7 +151,14 @@ export function useSpringT(target, { stiffness = 140, damping = 20 } = {}) {
 // ---------------------------------------------------------------------------
 // GlobeArcs
 // ---------------------------------------------------------------------------
-export default function GlobeArcs({ onApexChange, zoomProgress = 0 }) {
+export default function GlobeArcs({ 
+  onApexChange, 
+  zoomProgress = 0, 
+  isLeftActive = false, 
+  isRightActive = false,
+  activeLeftYs = [],
+  activeRightYs = [],
+}) {
   const apex = FIXED_APEX;
   const t = useSpringT(zoomProgress);
 
@@ -168,10 +175,43 @@ export default function GlobeArcs({ onApexChange, zoomProgress = 0 }) {
         {GRADIENTS_BASE.map(({ id, side, tier, stops }) => {
           const x = apex[side][tier];
           const { y1, y2 } = TIER_Y[tier];
+          
+          const isActiveLine = (side === "left" && isLeftActive) || (side === "right" && isRightActive);
+          const activeYs = side === "left" ? activeLeftYs : activeRightYs;
+          
+          let finalStops;
+          if (isActiveLine && tier === "middle") {
+            const range = y2 - y1;
+            const sortedYs = [...activeYs].sort((a, b) => a - b);
+            const minY = sortedYs[0];
+            const maxY = sortedYs[sortedYs.length - 1];
+            
+            // Calculate localized green range with 40px padding for better presence
+            const startOffset = (minY - 40 - y1) / range;
+            const endOffset = (maxY + 40 - y1) / range;
+
+            // Completely regenerate stops for the active arc to ensure perfect symmetry
+            // and prevent base stops from interfering with the green highlight.
+            finalStops = [
+              { offset: 0, color: "white", opacity: 0 },
+              { offset: Math.max(0, startOffset - 0.08), color: "white", opacity: 0.1 },
+              { offset: Math.max(0, startOffset), color: "#f59e0b", opacity: 0.8 },
+              { offset: Math.min(1, endOffset), color: "#f59e0b", opacity: 0.8 },
+              { offset: Math.min(1, endOffset + 0.08), color: "white", opacity: 0.1 },
+              { offset: 1, color: "white", opacity: 0 }
+            ];
+          } else {
+            finalStops = stops.map(s => ({
+              offset: parseFloat(s.offset),
+              color: "white",
+              opacity: s.opacity
+            }));
+          }
+
           return (
             <linearGradient key={id} id={id} x1={x} y1={y1} x2={x} y2={y2} gradientUnits="userSpaceOnUse">
-              {stops.map((s) => (
-                <stop key={s.offset} offset={s.offset} stopColor="white" stopOpacity={s.opacity} />
+              {finalStops.map((s, i) => (
+                <stop key={i} offset={s.offset} stopColor={s.color} stopOpacity={s.opacity} />
               ))}
             </linearGradient>
           );
