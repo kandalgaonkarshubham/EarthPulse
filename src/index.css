@@ -4,6 +4,32 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-card-green {
+    background: linear-gradient(180deg, rgba(34,197,94,0.02) 0%, rgba(34,197,94,0.10) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 10px 40px -10px rgba(34,197,94,0.40), inset 0 0 20px rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .glass-card-yellow {
+    background: linear-gradient(180deg, rgba(245,158,11,0.02) 0%, rgba(245,158,11,0.10) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 10px 40px -10px rgba(245,158,11,0.35), inset 0 0 20px rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+}
+
 
 body,
 #root {

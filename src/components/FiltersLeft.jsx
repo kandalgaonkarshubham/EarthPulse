@@ -60,17 +60,29 @@ export default function FiltersLeft({ selectedTimeRange, setSelectedTimeRange, a
             ) : (
               <circle cx={marker.x} cy={marker.y} r="1.5" fill="rgba(255,255,255,0.2)" />
             )}
-            <text
-              x={marker.x - 18}
-              y={marker.y + 5}
-              textAnchor="end"
-              fill={isActive ? "#f59e0b" : "#6C7083"}
-              fontSize={isActive ? 14 : 12}
-              fontWeight={isActive ? 600 : 500}
-              fontFamily="Roboto, sans-serif"
+            <foreignObject
+              x={marker.x - 65}
+              y={marker.y - 12}
+              width={55}
+              height={24}
+              className="overflow-visible"
             >
-              {marker.label}
-            </text>
+              <div 
+                className={`flex items-center justify-center h-full rounded-[10px] px-2 transition-all duration-700 ease-in-out border cursor-pointer ${
+                  zoomProgress === 1 
+                    ? (isActive ? 'glass-card-yellow scale-110 shadow-[0_0_20px_rgba(245,158,11,0.3)]' : 'glass-card')
+                    : 'bg-transparent shadow-none border-transparent'
+                }`}
+              >
+                <span 
+                  className={`text-[10px] uppercase font-bold tracking-wider transition-colors duration-500 leading-none ${
+                    isActive ? 'text-amber-500' : (zoomProgress === 1 ? 'text-white/70' : 'text-[#6C7083]')
+                  }`}
+                >
+                  {marker.label}
+                </span>
+              </div>
+            </foreignObject>
           </g>
         );
       })}

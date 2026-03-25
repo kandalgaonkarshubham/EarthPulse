@@ -48,22 +48,6 @@ export default function FilterLayout({
       {/* 3. Foreground UI Layer (z-20) — Interactive filter lines, dots, and labels on top */}
       <div className="absolute inset-0 z-20 pointer-events-none">
 
-        {/* Dynamic Edge Backgrounds — Appear only when HUD elements shift to the screen edges */}
-        <div
-          className="absolute inset-y-0 left-0 w-[420px] backdrop-blur-xl transition-opacity duration-700 ease-in-out border-r border-white/5"
-          style={{
-            opacity: zoomProgress === 1 ? 1 : 0,
-            maskImage: 'linear-gradient(to right, black 60%, transparent)'
-          }}
-        />
-        <div
-          className="absolute inset-y-0 right-0 w-[420px] backdrop-blur-xl transition-opacity duration-700 ease-in-out border-l border-white/5"
-          style={{
-            opacity: zoomProgress === 1 ? 1 : 0,
-            maskImage: 'linear-gradient(to left, black 60%, transparent)'
-          }}
-        />
-
         <svg
           viewBox="0 0 1440 812"
           className="absolute inset-0 w-full h-full pointer-events-none"

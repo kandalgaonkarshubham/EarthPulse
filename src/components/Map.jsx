@@ -25,6 +25,7 @@ export default function Map() {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const lastCoordsRef = useRef({ lng: 0, lat: 0 });
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   const handleModalChange = (e) => setIsModalOpen(e);
 
@@ -125,6 +126,7 @@ export default function Map() {
     });
 
     map.on("load", () => {
+      setIsMapLoaded(true);
       updateLocationInfo();
 
       map.addSource("earthquakes", {
@@ -312,13 +314,13 @@ export default function Map() {
   }, []);
 
   useEffect(() => {
-    if (mapRef.current && mapRef.current.getSource("earthquakes")) {
+    if (isMapLoaded && mapRef.current && mapRef.current.getSource("earthquakes")) {
       mapRef.current.getSource("earthquakes").setData({
         type: "FeatureCollection",
         features: filteredEarthquakes,
       });
     }
-  }, [filteredEarthquakes]);
+  }, [filteredEarthquakes, isMapLoaded]);
 
   useEffect(() => {
     if (selectedEarthquake && mapRef.current) {
