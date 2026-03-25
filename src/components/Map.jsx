@@ -11,26 +11,16 @@ import { useFilterContext } from "@/context/Filter";
 
 export default function Map() {
   const {
-    earthquakes,
-    magnitudeFilter,
-    magnitudeTypeFilter,
-    significanceFilter,
-    tsunamiFilter,
-    statusFilter,
-    alertFilter,
-    timeFilter,
-    getFilteredData,
-    resetMap,
+    isModalOpen,
+    setIsModalOpen,
+    filteredEarthquakes,
+    selectedEarthquake,
+    setSelectedEarthquake,
     setLocation,
     setHemisphere,
     setMapZoom,
-    selectedEarthquake,
-    setSelectedEarthquake,
-    isModalOpen,
-    setIsModalOpen,
+    earthquakes,
   } = useFilterContext();
-
-  const [filteredEarthquakes, setFilteredEarthquakes] = useState(earthquakes);
 
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -322,32 +312,6 @@ export default function Map() {
   }, []);
 
   useEffect(() => {
-    if (
-      magnitudeFilter != null ||
-      magnitudeTypeFilter != null ||
-      significanceFilter != null ||
-      tsunamiFilter != null ||
-      statusFilter != null ||
-      alertFilter != null ||
-      timeFilter != null ||
-      resetMap
-    ) {
-      const refilteredData = getFilteredData();
-      setFilteredEarthquakes(refilteredData);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    magnitudeFilter,
-    magnitudeTypeFilter,
-    significanceFilter,
-    tsunamiFilter,
-    statusFilter,
-    alertFilter,
-    timeFilter,
-    resetMap,
-  ]);
-
-  useEffect(() => {
     if (mapRef.current && mapRef.current.getSource("earthquakes")) {
       mapRef.current.getSource("earthquakes").setData({
         type: "FeatureCollection",
@@ -355,6 +319,16 @@ export default function Map() {
       });
     }
   }, [filteredEarthquakes]);
+
+  useEffect(() => {
+    if (selectedEarthquake && mapRef.current) {
+      const coordinates = selectedEarthquake.geometry.coordinates.slice(0, 2);
+      mapRef.current.easeTo({
+        center: coordinates,
+        zoom: 8,
+      });
+    }
+  }, [selectedEarthquake]);
 
   return (
     <div className="w-full h-full relative overflow-hidden">

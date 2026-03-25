@@ -28,6 +28,8 @@ export const FilterProvider = ({ children }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [apex, setApex] = useState(null);
+  const [filteredEarthquakes, setFilteredEarthquakes] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // ── zoom level reported by Map.jsx ─────────────────────────────────────────
   const [mapZoom, setMapZoom] = useState(2);
@@ -143,6 +145,11 @@ export const FilterProvider = ({ children }) => {
         timeMatches
       );
     });
+
+    setFilteredEarthquakes(filtered);
+    if (currentIndex >= filtered.length) {
+      setCurrentIndex(0);
+    }
 
     const isAnyFilterActive =
       magnitudeFilter != null ||
@@ -266,6 +273,9 @@ export const FilterProvider = ({ children }) => {
         setUserLocation,
         apex,
         setApex,
+        filteredEarthquakes,
+        currentIndex,
+        setCurrentIndex,
       }}
     >
       {children}

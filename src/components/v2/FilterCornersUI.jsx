@@ -1,4 +1,4 @@
-import { Settings, Moon, Search } from "lucide-react";
+import { Settings, Moon, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useFilterContext } from "@/context/Filter";
 
 export default function FilterCornersUI({
@@ -7,7 +7,16 @@ export default function FilterCornersUI({
   selectedTimeRange,
   selectedFilters,
 }) {
-  const { resetFilters, location, hemisphere, filterCount } = useFilterContext();
+  const { 
+    resetFilters, 
+    location, 
+    hemisphere, 
+    filterCount,
+    filteredEarthquakes,
+    currentIndex,
+    setCurrentIndex,
+    setSelectedEarthquake
+  } = useFilterContext();
   // Format time range for display
   const timeRangeLabel = {
     "1h": "Last 1H",
@@ -73,25 +82,58 @@ export default function FilterCornersUI({
       )}
 
       {/* ── Active Filters Display (center bottom desktop, bottom mobile) ── */}
-      <div className="px-6 pb-6 md:px-0 md:row-start-3 md:col-start-2 md:self-end md:justify-self-center pointer-events-auto">
-        <div
-          className="flex items-center justify-center rounded-[20px] px-8 py-[10px]"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(34,197,94,0.02) 0%, rgba(34,197,94,0.10) 100%)",
-            backdropFilter: "blur(4px)",
-            boxShadow: "0 10px 30px -5px rgba(34,197,94,0.30)",
-            borderTop: "1px solid rgba(255,255,255,0.05)",
-            borderLeft: "1px solid rgba(255,255,255,0.05)",
-            borderRight: "1px solid rgba(255,255,255,0.05)",
-            borderBottom: "2px solid rgba(255,255,255,0.05)",
-          }}
-        >
-          <span className="text-white text-[14px] font-medium tracking-[0.5px] whitespace-nowrap">
-            {timeRangeLabel} · Mag {magLabel} &nbsp; 20° – 28° C
-          </span>
+      {filterCount !== null && (
+        <div className="px-6 pb-6 md:px-0 md:row-start-3 md:col-start-2 md:self-end md:justify-self-center pointer-events-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div
+            className="flex items-center justify-center rounded-[20px] px-8 py-3 gap-6"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(34,197,94,0.02) 0%, rgba(34,197,94,0.10) 100%)",
+              backdropFilter: "blur(12px)",
+              boxShadow: "0 10px 40px -10px rgba(34,197,94,0.40), inset 0 0 20px rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <button
+              onClick={() => {
+                const newIndex = (currentIndex - 1 + filteredEarthquakes.length) % filteredEarthquakes.length;
+                setCurrentIndex(newIndex);
+                setSelectedEarthquake(filteredEarthquakes[newIndex]);
+              }}
+              className="text-white/60 hover:text-white transition-all transform hover:scale-110 active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed group"
+              disabled={filteredEarthquakes.length === 0}
+            >
+              <ChevronLeft size={24} strokeWidth={2} className="group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
+            </button>
+
+            <div className="flex flex-col items-center min-w-[80px]">
+              <div className="flex items-baseline gap-1">
+                <span className="text-white text-[20px] font-bold tracking-[1px] leading-none">
+                  {filteredEarthquakes.length > 0 ? currentIndex + 1 : 0}
+                </span>
+                <span className="text-white/30 text-[12px] font-medium">
+                  / {filteredEarthquakes.length}
+                </span>
+              </div>
+              <span className="text-white/40 text-[9px] uppercase font-bold tracking-[2px] mt-1 whitespace-nowrap">
+                {filteredEarthquakes.length === 1 ? 'Event Found' : 'Events Found'}
+              </span>
+            </div>
+
+            <button
+              onClick={() => {
+                const newIndex = (currentIndex + 1) % filteredEarthquakes.length;
+                setCurrentIndex(newIndex);
+                setSelectedEarthquake(filteredEarthquakes[newIndex]);
+              }}
+              className="text-white/60 hover:text-white transition-all transform hover:scale-110 active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed group"
+              disabled={filteredEarthquakes.length === 0}
+            >
+              <ChevronRight size={24} strokeWidth={2} className="group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
