@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { X, CheckCircle2, Radio, Activity, Database, ArrowRight, MapPin } from 'lucide-react';
+import { X, CheckCircle2, Radio, Activity, Database, ArrowRight, MapPin, AlertTriangle } from 'lucide-react';
 import { useFilterContext } from "@/context/Filter";
 
 export default function EQModalNew({ quake, isOpen, onClose }) {
@@ -21,6 +21,76 @@ export default function EQModalNew({ quake, isOpen, onClose }) {
   const getStatus = () => {
     return quake?.properties?.status === 'reviewed' ? 'AUTOMATIC' : 'PENDING';
   };
+
+  // Get Alert level config
+  const getAlertConfig = (level) => {
+    const l = level?.toLowerCase();
+    switch(l) {
+      case 'green':
+        return {
+          theme: 'primary',
+          color: 'text-primary',
+          border: 'border-primary/20',
+          bg: 'bg-emerald-900/5',
+          glow: 'rich-glow-emerald',
+          label: 'NORMAL',
+          shadow: 'shadow-[0_0_20px_rgba(16,185,129,0.2)]',
+          icon: CheckCircle2,
+          borderClass: 'emerald-border'
+        };
+      case 'yellow':
+        return {
+          theme: 'secondary',
+          color: 'text-secondary',
+          border: 'border-secondary/20',
+          bg: 'bg-amber-900/5',
+          glow: 'rich-glow-amber',
+          label: 'ADVISORY',
+          shadow: 'shadow-[0_0_20px_rgba(245,158,11,0.2)]',
+          icon: AlertTriangle,
+          borderClass: 'gold-border'
+        };
+      case 'orange':
+        return {
+          theme: 'tertiary',
+          color: 'text-tertiary',
+          border: 'border-tertiary/20',
+          bg: 'bg-orange-900/5',
+          glow: 'rich-glow-copper',
+          label: 'WATCH',
+          shadow: 'shadow-[0_0_20px_rgba(234,88,12,0.2)]',
+          icon: AlertTriangle,
+          borderClass: 'orange-border'
+        };
+      case 'red':
+        return {
+          theme: 'red-500',
+          color: 'text-red-500',
+          border: 'border-red-500/20',
+          bg: 'bg-red-900/5',
+          glow: 'rich-glow-red',
+          label: 'CRITICAL',
+          shadow: 'shadow-[0_0_20px_rgba(239,68,68,0.2)]',
+          icon: AlertTriangle,
+          borderClass: 'red-border'
+        };
+      default:
+        return {
+          theme: 'slate-500',
+          color: 'text-slate-500',
+          border: 'border-slate-500/10',
+          bg: 'bg-slate-900/5',
+          glow: '',
+          label: 'NONE',
+          shadow: '',
+          icon: CheckCircle2,
+          borderClass: 'slate-border'
+        };
+    }
+  };
+
+  const alertConfig = getAlertConfig(quake?.properties?.alert);
+  const AlertIcon = alertConfig.icon;
 
   // Helper to calculate distance (Haversine formula)
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -104,7 +174,7 @@ export default function EQModalNew({ quake, isOpen, onClose }) {
                 </div>
 
                 {/* Event Status Box */}
-                <div className="bg-amber-900/5 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-secondary/20 glass-highlight flex flex-col justify-center items-center text-center bg-gradient-to-br from-secondary/10 to-transparent">
+                <div className="bg-amber-900/5 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-secondary/20 glass-highlight overflow-hidden flex flex-col justify-center items-center text-center bg-gradient-to-br from-secondary/10 to-transparent">
                   <div className="text-[8px] md:text-[9px] font-headline text-secondary uppercase font-bold tracking-[0.4em] mb-4 md:mb-6 rich-glow-amber text-nowrap">Event Status</div>
                   <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-secondary/10 flex items-center justify-center mb-4 md:mb-5 gold-border shadow-[0_0_20px_rgba(245,158,11,0.2)]">
                     <CheckCircle2 className="w-8 h-8 md:w-10 md:h-10 text-secondary pulse-amber" />
@@ -121,7 +191,7 @@ export default function EQModalNew({ quake, isOpen, onClose }) {
 
               {/* Details Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                <div className="bg-surface/40 p-5 md:p-6 rounded-xl md:rounded-2xl border border-primary/10 glass-highlight group hover:border-primary/40 transition-all hover:bg-surface/60">
+                <div className="bg-surface/40 p-5 md:p-6 rounded-xl md:rounded-2xl border border-primary/10 glass-highlight overflow-hidden group hover:border-primary/40 transition-all hover:bg-surface/60">
                   <div className="text-[8px] md:text-[9px] font-headline text-slate-600 uppercase font-bold tracking-[0.3em] mb-2">Global Location</div>
                   <div className="font-headline text-on-surface font-bold text-sm md:text-base tracking-tight">{place}</div>
                   <div className="text-[9px] md:text-[10px] font-headline text-primary mt-3 font-bold rich-glow-emerald tracking-wide">
@@ -129,13 +199,13 @@ export default function EQModalNew({ quake, isOpen, onClose }) {
                   </div>
                 </div>
 
-                <div className="bg-surface/40 p-5 md:p-6 rounded-xl md:rounded-2xl border border-secondary/10 glass-highlight group hover:border-secondary/40 transition-all hover:bg-surface/60">
+                <div className="bg-surface/40 p-5 md:p-6 rounded-xl md:rounded-2xl border border-secondary/10 glass-highlight overflow-hidden group hover:border-secondary/40 transition-all hover:bg-surface/60">
                   <div className="text-[8px] md:text-[9px] font-headline text-slate-600 uppercase font-bold tracking-[0.3em] mb-2">Telemetry Timestamp</div>
                   <div className="font-headline text-on-surface font-bold text-sm md:text-base tracking-tight">{eventDate}</div>
                   <div className="text-[9px] md:text-[10px] font-headline text-secondary mt-3 font-bold uppercase tracking-[0.2em]">EPOCH: {quake?.properties?.time || "N/A"}</div>
                 </div>
 
-                <div className="bg-surface/40 p-5 md:p-6 rounded-xl md:rounded-2xl border border-tertiary/10 glass-highlight group hover:border-tertiary/40 transition-all hover:bg-surface/60">
+                <div className="bg-surface/40 p-5 md:p-6 rounded-xl md:rounded-2xl border border-tertiary/10 glass-highlight overflow-hidden group hover:border-tertiary/40 transition-all hover:bg-surface/60">
                   <div className="text-[8px] md:text-[9px] font-headline text-slate-600 uppercase font-bold tracking-[0.3em] mb-2">Focal Depth</div>
                   <div className="font-headline text-2xl md:text-3xl text-tertiary font-black rich-glow-copper tracking-tighter">
                     {(quake?.geometry?.coordinates?.[2] ?? 0).toFixed(2)} <span className="text-[10px] md:text-xs font-bold text-slate-600 tracking-normal ml-1">KM</span>
@@ -148,7 +218,7 @@ export default function EQModalNew({ quake, isOpen, onClose }) {
                   </div>
                 </div>
 
-                <div className="bg-surface/40 p-5 md:p-6 rounded-xl md:rounded-2xl border border-primary/10 glass-highlight group hover:border-primary/40 transition-all hover:bg-surface/60">
+                <div className="bg-surface/40 p-5 md:p-6 rounded-xl md:rounded-2xl border border-primary/10 glass-highlight overflow-hidden group hover:border-primary/40 transition-all hover:bg-surface/60">
                   <div className="text-[8px] md:text-[9px] font-headline text-slate-600 uppercase font-bold tracking-[0.3em] mb-2">Magnitude Type</div>
                   <div className="font-headline text-2xl md:text-3xl text-primary font-black uppercase tracking-tighter rich-glow-emerald">
                     {(quake?.properties?.magType || "N/A").toUpperCase()}
@@ -175,9 +245,9 @@ export default function EQModalNew({ quake, isOpen, onClose }) {
             </div>
 
             {/* Sidebar Info */}
-            <div className="space-y-6 md:space-y-8">
+            <div className="flex flex-col h-full gap-6 md:gap-8">
               {/* Array Analytics Panel */}
-              <div className="glass-panel p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-primary/10 bg-surface/40 glass-highlight shadow-xl">
+              <div className="glass-panel p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-primary/10 bg-surface/40 glass-highlight overflow-hidden shadow-xl">
                 <h4 className="font-headline text-[9px] md:text-[10px] font-bold text-primary uppercase tracking-[0.3em] mb-6 md:mb-8 rich-glow-emerald border-b border-primary/10 pb-4">Array Analytics</h4>
                 <ul className="space-y-4 md:space-y-6">
                   <li className="flex justify-between items-center">
@@ -199,23 +269,47 @@ export default function EQModalNew({ quake, isOpen, onClose }) {
                 </ul>
               </div>
 
-              {/* External Source Link */}
-              <div
-                className="p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] bg-gradient-to-br from-secondary/15 to-tertiary/5 border border-secondary/20 glass-highlight group cursor-pointer shadow-xl hover:from-secondary/20 hover:to-tertiary/10 transition-all"
-                onClick={() => window.open(quake?.properties?.url, '_blank')}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[8px] md:text-[9px] font-headline text-secondary font-bold tracking-[0.4em] uppercase rich-glow-amber">Verified Source</span>
-                  <Database className="w-4 h-4 text-secondary" />
+              {/* Alert Level Box */}
+              <div className={`${alertConfig.bg} p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border ${alertConfig.border} glass-highlight overflow-hidden flex-1 flex flex-col justify-center items-center text-center bg-gradient-to-br from-${alertConfig.theme}/10 to-transparent shadow-xl`}>
+                <div className={`text-[8px] md:text-[9px] font-headline ${alertConfig.color} uppercase font-bold tracking-[0.4em] mb-4 md:mb-6 ${alertConfig.glow} text-nowrap`}>Alert Level</div>
+                <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full ${alertConfig.bg.replace('900/5', '500/10')} flex items-center justify-center mb-4 md:mb-5 ${alertConfig.borderClass} ${alertConfig.shadow}`}>
+                  <AlertIcon className={`w-8 h-8 md:w-10 md:h-10 ${alertConfig.color}`} />
                 </div>
-                <p className="text-[8px] md:text-[9px] text-slate-500 font-headline font-medium mb-6 uppercase tracking-[0.2em] leading-relaxed">
-                  Full Geological Context accessible via United States Geological Survey
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="font-headline font-black text-secondary uppercase tracking-[0.3em] text-[10px] group-hover:underline rich-glow-amber text-nowrap">USGS EVENT PAGE</span>
-                  <ArrowRight className="w-5 h-5 text-secondary group-hover:translate-x-2 transition-transform" />
+                <div className={`font-headline text-xl md:text-2xl font-bold text-white uppercase tracking-widest ${alertConfig.glow}`}>
+                  {alertConfig.label}
+                </div>
+                <div className="text-[7px] md:text-[8px] font-headline text-slate-500 mt-3 md:mt-4 uppercase font-bold tracking-[0.2em] leading-relaxed">
+                  MMI Intensity: {quake?.properties?.mmi ?? "N/A"}<br/>
+                  Felt Reports: {quake?.properties?.felt ?? 0}
                 </div>
               </div>
+
+            </div>
+          </div>
+
+          {/* External Source Link (Full Width Action Bar) */}
+          <div
+            className="mt-8 md:mt-10 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-secondary/15 glass-highlight overflow-hidden bg-gradient-to-r from-secondary/10 via-secondary/5 to-secondary/10 group cursor-pointer shadow-2xl hover:border-secondary/30 hover:from-secondary/15 transition-all flex flex-col md:flex-row items-center justify-between gap-6"
+            onClick={() => window.open(quake?.properties?.url, '_blank')}
+          >
+            <div className="flex items-center gap-4 md:gap-6">
+              <div className="w-10 h-10 md:w-16 md:h-16 rounded-2xl bg-secondary/10 flex items-center justify-center border border-secondary/20 shadow-inner group-hover:scale-110 transition-transform duration-500 flex-shrink-0">
+                <Database className="w-5 h-5 md:w-8 md:h-8 text-secondary" />
+              </div>
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <span className="text-[9px] md:text-xs font-headline text-secondary font-black tracking-[0.3em] md:tracking-[0.4em] uppercase rich-glow-amber">Verified Source</span>
+                  <div className="h-px w-6 md:w-8 bg-secondary/30"></div>
+                </div>
+                <p className="text-[8px] md:text-[11px] text-slate-400 font-headline font-medium uppercase tracking-[0.1em] md:tracking-[0.2em] leading-relaxed max-w-2xl">
+                  Full Geological Context & Advanced Telemetry metrics accessible via the United States Geological Survey global data network
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 bg-secondary/10 px-8 py-4 rounded-2xl border border-secondary/20 group-hover:bg-secondary/20 transition-all shadow-lg group-hover:shadow-secondary/10">
+              <span className="font-headline font-black text-secondary uppercase tracking-[0.3em] text-[10px] md:text-xs rich-glow-amber">USGS EVENT PAGE</span>
+              <ArrowRight className="w-5 h-5 md:w-6 md:h-6 text-secondary group-hover:translate-x-3 transition-transform duration-500" />
             </div>
           </div>
         </div>

@@ -354,3 +354,15 @@ body {
 .emerald-border {
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
+
+.orange-border {
+  border: 1px solid rgba(234, 88, 12, 0.3);
+}
+
+.red-border {
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.slate-border {
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
