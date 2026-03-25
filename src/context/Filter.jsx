@@ -27,6 +27,7 @@ export const FilterProvider = ({ children }) => {
   const [selectedEarthquake, setSelectedEarthquake] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
+  const [apex, setApex] = useState(null);
 
   // ── zoom level reported by Map.jsx ─────────────────────────────────────────
   const [mapZoom, setMapZoom] = useState(2);
@@ -263,6 +264,8 @@ export const FilterProvider = ({ children }) => {
         setIsModalOpen,
         userLocation,
         setUserLocation,
+        apex,
+        setApex,
       }}
     >
       {children}

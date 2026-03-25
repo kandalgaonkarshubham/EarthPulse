@@ -25,6 +25,8 @@ export default function App() {
     selectedEarthquake,
     isModalOpen,
     setIsModalOpen,
+    zoomProgress,
+    setApex,
   } = useFilterContext();
 
   const [search, setSearch] = useState("");
@@ -115,10 +117,17 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refetch]);
 
+  const isLeftActive = !!selectedTimeRange && selectedTimeRange !== "all";
+  const isRightActive = Object.values(selectedFilters || {}).some((v) => !!v);
+
   return (
     <div className="relative w-full h-screen overflow-hidden bg-neutral-900 text-white font-sans">
-      {/* Map Background */}
-      <div className="absolute inset-0 z-0">
+      <FilterLayout
+        selectedTimeRange={selectedTimeRange}
+        setSelectedTimeRange={setSelectedTimeRange}
+        selectedFilters={selectedFilters}
+        setSelectedFilters={setSelectedFilters}
+      >
         {loading ? (
           <Loader />
         ) : earthquakes.length !== 0 ? (
@@ -126,16 +135,9 @@ export default function App() {
         ) : (
           <Error error={error} />
         )}
-      </div>
+      </FilterLayout>
 
-      <div className="absolute inset-0 z-10 pointer-events-none">
-        <FilterLayout
-          selectedTimeRange={selectedTimeRange}
-          setSelectedTimeRange={setSelectedTimeRange}
-          selectedFilters={selectedFilters}
-          setSelectedFilters={setSelectedFilters}
-        />
-
+      <div className="absolute inset-0 z-30 pointer-events-none">
         <FilterCornersUI
           search={search}
           setSearch={setSearch}

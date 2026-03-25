@@ -158,6 +158,7 @@ export default function GlobeArcs({
   isRightActive = false,
   activeLeftYs = [],
   activeRightYs = [],
+  enabledTiers = ["middle", "inner", "outer"]
 }) {
   const apex = FIXED_APEX;
   const t = useSpringT(zoomProgress);
@@ -166,13 +167,14 @@ export default function GlobeArcs({
     onApexChange?.(apex);
   }, []); // eslint-disable-line
 
-  const secondaryArcs = ARC_DEFS.filter(([,, tier]) => tier !== "middle");
-  const mainArcs      = ARC_DEFS.filter(([,, tier]) => tier === "middle");
+  const filteredArcs  = ARC_DEFS.filter(([,, tier]) => enabledTiers.includes(tier));
+  const secondaryArcs = filteredArcs.filter(([,, tier]) => tier !== "middle");
+  const mainArcs      = filteredArcs.filter(([,, tier]) => tier === "middle");
 
   return (
     <svg x="270" y="-44" width="900" height="900" viewBox="0 0 900 900" overflow="visible">
       <defs>
-        {GRADIENTS_BASE.map(({ id, side, tier, stops }) => {
+        {GRADIENTS_BASE.filter(g => enabledTiers.includes(g.tier)).map(({ id, side, tier, stops }) => {
           const x = apex[side][tier];
           const { y1, y2 } = TIER_Y[tier];
           
