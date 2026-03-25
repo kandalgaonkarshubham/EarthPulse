@@ -15,10 +15,10 @@ export default function FilterLayout({
   const isRightActive = Object.values(selectedFilters || {}).some((v) => !!v);
 
   // Map the selected time range to its corresponding marker Y coordinate
-  const activeLeftYs = isLeftActive 
+  const activeLeftYs = isLeftActive
     ? [266, 338, 410, 482, 554][["1h", "2h", "6h", "12h", "24h"].indexOf(selectedTimeRange)]
     : null;
-    
+
   // Map all active filters to their category marker Y coordinates
   const activeRightYs = isRightActive
     ? [270, 326, 382, 438, 494, 550].filter((_, i) => {
@@ -32,8 +32,8 @@ export default function FilterLayout({
       {/* 1. Deep Background Layer (z-0) — Decorative arcs hidden behind the Earth sphere */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <svg viewBox="0 0 1440 812" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
-          <GlobeArcs 
-             onApexChange={setApex} 
+          <GlobeArcs
+             onApexChange={setApex}
              zoomProgress={zoomProgress}
              enabledTiers={["inner", "outer"]}
           />
@@ -47,6 +47,23 @@ export default function FilterLayout({
 
       {/* 3. Foreground UI Layer (z-20) — Interactive filter lines, dots, and labels on top */}
       <div className="absolute inset-0 z-20 pointer-events-none">
+
+        {/* Dynamic Edge Backgrounds — Appear only when HUD elements shift to the screen edges */}
+        <div
+          className="absolute inset-y-0 left-0 w-[420px] backdrop-blur-xl transition-opacity duration-700 ease-in-out border-r border-white/5"
+          style={{
+            opacity: zoomProgress === 1 ? 1 : 0,
+            maskImage: 'linear-gradient(to right, black 60%, transparent)'
+          }}
+        />
+        <div
+          className="absolute inset-y-0 right-0 w-[420px] backdrop-blur-xl transition-opacity duration-700 ease-in-out border-l border-white/5"
+          style={{
+            opacity: zoomProgress === 1 ? 1 : 0,
+            maskImage: 'linear-gradient(to left, black 60%, transparent)'
+          }}
+        />
+
         <svg
           viewBox="0 0 1440 812"
           className="absolute inset-0 w-full h-full pointer-events-none"

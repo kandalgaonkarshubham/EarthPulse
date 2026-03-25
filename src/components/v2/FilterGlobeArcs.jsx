@@ -102,7 +102,7 @@ export function interpolateApex(_width) {
 // translation is never clipped. Secondary arcs stay inside clipPath.
 // ---------------------------------------------------------------------------
 // Single source of truth — change EDGE_PADDING here and dots + lines both update.
-export const EDGE_PADDING     =  84;  // viewBox units from each side
+export const EDGE_PADDING     =  110;  // viewBox units from each side
 export const LEFT_HUG_SHIFT  = EDGE_PADDING - 495;   // 24 - (225+270)
 export const RIGHT_HUG_SHIFT = (1440 - EDGE_PADDING) - 945; // (1440-24) - (675+270)
 
@@ -151,10 +151,10 @@ export function useSpringT(target, { stiffness = 140, damping = 20 } = {}) {
 // ---------------------------------------------------------------------------
 // GlobeArcs
 // ---------------------------------------------------------------------------
-export default function GlobeArcs({ 
-  onApexChange, 
-  zoomProgress = 0, 
-  isLeftActive = false, 
+export default function GlobeArcs({
+  onApexChange,
+  zoomProgress = 0,
+  isLeftActive = false,
   isRightActive = false,
   activeLeftYs = [],
   activeRightYs = [],
@@ -177,17 +177,17 @@ export default function GlobeArcs({
         {GRADIENTS_BASE.filter(g => enabledTiers.includes(g.tier)).map(({ id, side, tier, stops }) => {
           const x = apex[side][tier];
           const { y1, y2 } = TIER_Y[tier];
-          
+
           const isActiveLine = (side === "left" && isLeftActive) || (side === "right" && isRightActive);
           const activeYs = side === "left" ? activeLeftYs : activeRightYs;
-          
+
           let finalStops;
           if (isActiveLine && tier === "middle") {
             const range = y2 - y1;
             const sortedYs = [...activeYs].sort((a, b) => a - b);
             const minY = sortedYs[0];
             const maxY = sortedYs[sortedYs.length - 1];
-            
+
             // Calculate localized green range with 40px padding for better presence
             const startOffset = (minY - 40 - y1) / range;
             const endOffset = (maxY + 40 - y1) / range;
