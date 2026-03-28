@@ -20,10 +20,10 @@ function SonarSweep() {
 function Heartbeat() {
   return (
     <div className="cursor-pointer relative flex items-center justify-center">
-      <div className="heartbeat-ring absolute size-4 rounded-full border-[1.5px] border-orange-500" />
-      <div className="heartbeat-ring absolute size-4 rounded-full border-[1.5px] border-orange-500" />
+      <div className="heartbeat-ring absolute size-3 rounded-full border-[1.5px] border-orange-500" />
+      <div className="heartbeat-ring absolute size-3 rounded-full border-[1.5px] border-orange-500" />
       <div
-        className="heartbeat-dot size-3 rounded-full bg-orange-500 z-10"
+        className="heartbeat-dot size-2 rounded-full bg-orange-500 z-10"
         style={{ boxShadow: "0 0 10px 2px hsl(0 75% 55% / 0.4)" }}
       />
     </div>
@@ -33,9 +33,9 @@ function Heartbeat() {
 function Beacon() {
   return (
     <div className="cursor-pointer relative flex items-center justify-center">
-      <div className="beacon-ring absolute size-4 rounded-full border border-pink-700 border-[1.5px]"></div>
-      <div className="beacon-ring absolute size-4 rounded-full border border-pink-700 border-[1.5px]"></div>
-      <div className="beacon-core size-4 rounded-full bg-pink-700 z-10 shadow-[0_0_12px_4px_hsl(332.1,100%,38.8%,0.5)]"></div>
+      <div className="beacon-ring absolute size-2 rounded-full border border-pink-700 border-[1.5px]"></div>
+      <div className="beacon-ring absolute size-2 rounded-full border border-pink-700 border-[1.5px]"></div>
+      <div className="beacon-core size-2 rounded-full bg-pink-700 z-10 shadow-[0_0_12px_4px_hsl(332.1,100%,38.8%,0.5)]"></div>
     </div>
   );
 }

@@ -1,9 +1,21 @@
-function getRings() {
+function getRings(n) {
+  let color;
+
+  if (n < 20) {
+    color = "#10b981";
+  } else if (n <= 40) {
+    color = "#84cdee";
+  } else if (n <= 60) {
+    color = "#f59e0b";
+  } else {
+    color = "#ef4444";
+  }
+
   return [
-    { radius: 38, count: 6, shape: "diamond", size: 4, opacity: 0.5, color: "hsl(10 80% 60%)" },
-    { radius: 56, count: 12, shape: "dot", size: 3, opacity: 0.7, color: "hsl(10 80% 60%)" },
-    { radius: 75, count: 12, shape: "teardrop", size: 7, offset: 15, opacity: 0.5, color: "hsl(10 80% 60%)" },
-    { radius: 95, count: 18, shape: "dot", size: 1.5, opacity: 0.3, color: "hsl(10 80% 60%)" },
+    { radius: 38, count: 6, shape: "diamond", size: 4, opacity: 0.5, color },
+    { radius: 56, count: 12, shape: "dot", size: 3, opacity: 0.7, color },
+    { radius: 75, count: 12, shape: "teardrop", size: 7, offset: 15, opacity: 0.5, color },
+    { radius: 95, count: 18, shape: "dot", size: 1.5, opacity: 0.3, color },
   ];
 }
 
@@ -48,10 +60,10 @@ function renderShape(ring, ri, i, angle, rad, cx, cy) {
 }
 
 const SeismicMandala = ({ number }) => {
-  const rings = getRings();
+  const rings = getRings(number);
 
   return (
-    <div className="flex flex-col items-center group">
+    <div className="cursor-pointer flex flex-col items-center group">
       <div className="relative w-20 h-20 flex items-center justify-center">
         <svg viewBox="-110 -110 220 220" className="w-full h-full">
           {rings.map((ring, ri) => {
