@@ -154,7 +154,7 @@ export default function Map() {
           // Create a new marker
           const el = document.createElement("div");
           el.className = isCluster ? "custom-cluster-marker" : "custom-marker";
-          
+
           const marker = new mapboxgl.Marker({ element: el })
             .setLngLat(coords)
             .addTo(mapRef.current);
@@ -180,7 +180,7 @@ export default function Map() {
             else if (mag >= 2) variant = "moderate";
             root.render(<PulsatingDot variant={variant} />);
           }
-          
+
           markersRef.current[code] = { marker, root };
         }
         currentMarkers[code] = true;
@@ -328,7 +328,7 @@ export default function Map() {
       map.off("move", updateMarkers);
       map.off("moveend", updateMarkers);
       debouncedUpdateLocation.cancel();
-      
+
       // Cleanup markers
       Object.keys(markersRef.current).forEach((code) => {
         markersRef.current[code].marker.remove();
