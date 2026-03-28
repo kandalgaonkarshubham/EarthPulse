@@ -2,71 +2,10 @@ import { useMemo, useState } from "react";
 import { sampleArcAtY, ARC_DEFS, ARC_SVG_OFFSET, useSpringT, RIGHT_HUG_SHIFT } from "./FilterGlobeArcs";
 import { CheckCircle2 } from "lucide-react";
 import { useFilterContext } from "@/context/Filter";
+import { FILTER_DATA, CATEGORIES } from "@/lib/filterData";
 
 function lerp(a, b, t) { return a + (b - a) * t; }
 
-
-const FILTER_DATA = {
-  magnitude: {
-    label: "MAG",
-    options: [
-      { label: "0-2", value: "0-2" },
-      { label: "2-4", value: "2-4" },
-      { label: "4-6", value: "4-6" },
-      { label: "6+",  value: "6+"  },
-    ],
-  },
-  significance: {
-    label: "SIG",
-    options: [
-      { label: "0-100",   value: "0-100"   },
-      { label: "100-200", value: "100-200" },
-      { label: "200-300", value: "200-300" },
-      { label: "300+",    value: "300+"    },
-    ],
-  },
-  tsunami: {
-    label: "TSU",
-    options: [
-      { label: "Yes",     value: "yes"     },
-      { label: "No",      value: "no"      },
-    ],
-  },
-  status: {
-    label: "STA",
-    options: [
-      { label: "Reviewed",  value: "reviewed"  },
-      { label: "Automatic", value: "automatic" },
-    ],
-  },
-  alert: {
-    label: "ALT",
-    options: [
-      { label: "Green",  value: "green"  },
-      { label: "Yellow", value: "yellow" },
-      { label: "Orange", value: "orange" },
-      { label: "Red",    value: "red"    },
-    ],
-  },
-  type: {
-    label: "TYP",
-    options: [
-      { label: "ML",  value: "ml"  },
-      { label: "MD",  value: "md"  },
-      { label: "MB",  value: "mb"  },
-      { label: "MWW", value: "mww" },
-    ],
-  },
-};
-
-const CATEGORIES = [
-  { key: "magnitude",    y: 270 },
-  { key: "significance", y: 326 },
-  { key: "tsunami",      y: 382 },
-  { key: "status",       y: 438 },
-  { key: "alert",        y: 494 },
-  { key: "type",         y: 550 },
-];
 
 const [, , , START_X, START_Y, END_X, END_Y] = ARC_DEFS[1];
 const APEX_Y = (START_Y + END_Y) / 2;

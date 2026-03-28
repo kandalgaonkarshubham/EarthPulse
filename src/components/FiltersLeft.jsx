@@ -1,17 +1,9 @@
 import { useMemo } from "react";
 import { useFilterContext } from "@/context/Filter";
 import { sampleArcAtY, ARC_DEFS, ARC_SVG_OFFSET, useSpringT, LEFT_HUG_SHIFT } from "./FilterGlobeArcs";
+import { TIME_MARKERS } from "@/lib/filterData";
 
 function lerp(a, b, t) { return a + (b - a) * t; }
-
-
-const TIME_MARKERS = [
-  { label: "1H", y: 266, timeRange: "1h" },
-  { label: "2H", y: 338, timeRange: "2h" },
-  { label: "6H", y: 410, timeRange: "6h" },
-  { label: "12H", y: 482, timeRange: "12h" },
-  { label: "24H", y: 554, timeRange: "24h" },
-];
 
 const [, , , START_X, START_Y, END_X, END_Y] = ARC_DEFS[0];
 const APEX_Y = (START_Y + END_Y) / 2;
@@ -50,11 +42,11 @@ export default function FiltersLeft({ leftHugShift = LEFT_HUG_SHIFT, leftBaseShi
   return (
     <>
       {markers.map((marker) => {
-        const isActive = marker.timeRange === selectedTimeRange;
+        const isActive = marker.value === selectedTimeRange;
         return (
           <g
-            key={marker.timeRange}
-            onClick={() => setSelectedTimeRange(marker.timeRange)}
+            key={marker.value}
+            onClick={() => setSelectedTimeRange(marker.value)}
             style={{ cursor: "pointer" }}
           >
             {isActive ? (
