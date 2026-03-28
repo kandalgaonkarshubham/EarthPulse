@@ -35,7 +35,7 @@ export default function Map() {
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       // style: "mapbox://styles/mapbox/dark-v11",
-      style: "mapbox://styles/kandalgaonkarshubham/cmn47fztf001t01r28b4ncilt",
+      style: import.meta.env.VITE_MAPBOX_STYLE,
       center: [73.22969, 19.15705],
       zoom: 2,
       projection: "globe",
@@ -115,14 +115,14 @@ export default function Map() {
       if (map.getLayer("background")) {
         map.setPaintProperty("background", "background-opacity", 0);
       }
-
       map.setFog({
-        color: "rgba(0, 0, 0, 0)",
-        "high-color": "rgba(0, 0, 0, 0)",
-        "horizon-blend": 0,
-        "space-color": "rgba(0, 0, 0, 0)",
-        "star-intensity": 0,
+        color: "#1a0f00", // Lower atmosphere
+        "high-color": "#140c00", // Upper atmosphere
+        "horizon-blend": 0.02, // Atmosphere thickness
+        "space-color": "#000a07", // Background color
+        "star-intensity": 0.35, // Background star brightness
       });
+      // map.setFog(null);
     });
 
     map.on("load", () => {
@@ -236,53 +236,38 @@ export default function Map() {
 
       map.on("click", "unclustered-point", (e) => {
         const clickedFeature = e.features[0];
-        // Mapbox strips the Z coordinate (depth) from rendered features.
-        // We find the original feature in our data by 'code' to get the full coordinates and ID.
         const earthquake = earthquakes.find(q => q.properties.code === clickedFeature.properties.code) || clickedFeature;
-
         const coordinates = clickedFeature.geometry.coordinates.slice(0, 2);
-        map.easeTo({
-          center: coordinates,
-          zoom: 8,
-        });
 
+        map.easeTo({ center: coordinates, zoom: 8 });
+
+        // Wait for zoom to finish, then show popup
         map.once("moveend", () => {
           const eventTime = new Date(earthquake.properties.time);
           const timeStr = eventTime.toLocaleString('en-US', { month: 'short', day: '2-digit' }).toUpperCase() + ' · ' +
-                         eventTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+                        eventTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
           const eventType = (earthquake.properties.type || "Seismic Event").toUpperCase();
-          const magValue = earthquake.properties.mag || 0;
-          const isHighMag = magValue >= 5.0;
-          const magColor = isHighMag ? "#ef4444" : "#f59e0b";
-          const magGlow = isHighMag ? "rgba(239, 68, 68, 0.5)" : "rgba(245, 158, 11, 0.4)";
 
           const popup = new mapboxgl.Popup({
             offset: 25,
             closeButton: false,
-            closeOnMove: true,
+            closeOnMove: false,
             className: "futuristic-popup",
           }).setLngLat(coordinates);
 
-          // Render React component into a temporary div
           const popupNode = document.createElement("div");
           const root = createRoot(popupNode);
           root.render(
-            <EarthquakePopup
-              earthquake={earthquake}
-              timeStr={timeStr}
-              eventType={eventType}
-            />
+            <EarthquakePopup earthquake={earthquake} timeStr={timeStr} eventType={eventType} />
           );
 
           popup.setDOMContent(popupNode).addTo(map);
-
           setSelectedEarthquake(earthquake);
 
           popup.getElement().addEventListener("click", () => {
             handleModalChange(true);
           });
 
-          // Optional: Cleanup React root when popup is removed
           popup.on("close", () => {
             setTimeout(() => root.unmount(), 0);
           });

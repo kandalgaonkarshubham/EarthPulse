@@ -3,14 +3,15 @@ import FiltersLeft from "./FiltersLeft";
 import FiltersRight from "./FiltersRight";
 import { useFilterContext } from "@/context/Filter";
 
-export default function FilterLayout({
-  children,
-  selectedTimeRange,
-  setSelectedTimeRange,
-  selectedFilters,
-  setSelectedFilters,
-}) {
-  const { zoomProgress, apex, setApex } = useFilterContext();
+export default function FilterLayout({ children }) {
+  const { 
+    selectedTimeRange, 
+    selectedFilters, 
+    zoomProgress, 
+    apex, 
+    setApex 
+  } = useFilterContext();
+  
   const isLeftActive = !!selectedTimeRange && selectedTimeRange !== "all";
   const isRightActive = Object.values(selectedFilters || {}).some((v) => !!v);
 
@@ -75,21 +76,11 @@ export default function FilterLayout({
           />
 
           <g className="pointer-events-auto">
-            <FiltersLeft
-              selectedTimeRange={selectedTimeRange}
-              setSelectedTimeRange={setSelectedTimeRange}
-              apex={apex}
-              zoomProgress={zoomProgress}
-            />
+            <FiltersLeft />
           </g>
 
           <g className="pointer-events-auto">
-            <FiltersRight
-              selectedFilters={selectedFilters}
-              setSelectedFilters={setSelectedFilters}
-              apex={apex}
-              zoomProgress={zoomProgress}
-            />
+            <FiltersRight />
           </g>
         </svg>
       </div>

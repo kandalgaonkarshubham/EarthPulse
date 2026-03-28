@@ -113,10 +113,10 @@ body {
 }
 
 @keyframes magnitudePulse {
-  0%, 100% { 
+  0%, 100% {
     box-shadow: 0 0 30px rgba(0, 240, 255, 0.4), inset 0 0 20px rgba(0, 240, 255, 0.1);
   }
-  50% { 
+  50% {
     box-shadow: 0 0 50px rgba(0, 240, 255, 0.7), inset 0 0 20px rgba(0, 240, 255, 0.2), 0 0 80px rgba(0, 240, 255, 0.3);
   }
 }
@@ -215,7 +215,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: 
+  background-image:
     linear-gradient(0deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
   background-size: 40px 40px;
@@ -248,7 +248,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: 
+  background-image:
     linear-gradient(0deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
   background-size: 50px 50px;
@@ -391,4 +391,68 @@ body {
 
 .slate-border {
   border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+/* ════════════════════════════════════════════════════════════════════ */
+/* Clusters and Points — elements shown on map */
+/* ════════════════════════════════════════════════════════════════════ */
+
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 8px 2px var(--glow-color-low);
+  }
+  50% {
+    transform: scale(var(--scale-peak));
+    box-shadow: 0 0 30px 10px var(--glow-color-high);
+  }
+}
+@keyframes breathe-glow {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50%      { transform: scale(4); opacity: 0.6; }
+}
+.breathe-dot  { animation: breathe      3s ease-in-out infinite; }
+.breathe-glow { animation: breathe-glow 3s ease-in-out infinite; }
+
+
+@keyframes sonar-burst {
+  0%   { transform: scale(1);  opacity: 0.5; }
+  100% { transform: scale(18); opacity: 0; }
+}
+.sonar-field { animation: sonar-burst 2s ease-out infinite; }
+.sonar-field:nth-child(2) { animation-delay: 1s; }
+
+
+@keyframes heartbeat {
+  0%  { transform: scale(1); }
+  14% { transform: scale(1.35); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.2); }
+  70% { transform: scale(1); }
+}
+@keyframes heartbeat-ring {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  14%  { transform: scale(2.5); opacity: 0.3; }
+  28%  { transform: scale(3.5); opacity: 0; }
+  100% { transform: scale(3.5); opacity: 0; }
+}
+.heartbeat-dot  { animation: heartbeat      2s ease-in-out infinite; }
+.heartbeat-ring { animation: heartbeat-ring 2s ease-out    infinite; }
+.heartbeat-ring:nth-child(2) { animation-delay: 0.15s; }
+
+
+.wave-ring {
+  position: absolute;
+  border-radius: 50%;
+  width: 12px; height: 12px;
+  border: 1.5px solid oklch(58.6% 0.253 17.585);
+  animation: wave-expand 2s cubic-bezier(0.1, 0.6, 0.3, 1) infinite;
+}
+.wave-ring:nth-child(1) { animation-delay: 0s; }
+.wave-ring:nth-child(2) { animation-delay: 0.6s; }
+.wave-ring:nth-child(3) { animation-delay: 1.2s; }
+.wave-ring:nth-child(4) { animation-delay: 1.8s; }
+@keyframes wave-expand {
+  0%   { transform: scale(1);  opacity: 0.6; border-width: 1.5px; }
+  100% { transform: scale(10); opacity: 0;   border-width: 0.5px; }
 }

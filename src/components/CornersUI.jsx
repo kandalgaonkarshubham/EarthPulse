@@ -1,13 +1,10 @@
-import { Settings, Moon, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Settings, Moon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useFilterContext } from "@/context/Filter";
 
-export default function FilterCornersUI({
-  search,
-  setSearch,
-  selectedTimeRange,
-  selectedFilters,
-}) {
+export default function FilterCornersUI() {
   const { 
+    selectedTimeRange,
+    selectedFilters,
     resetFilters, 
     location, 
     hemisphere, 
@@ -56,19 +53,7 @@ export default function FilterCornersUI({
         </div>
       </div>
 
-      {/* ── Search ── */}
-      {/* <div className="px-6 md:m-10 md:row-start-3 md:col-start-1 md:self-end md:justify-self-start w-full md:w-[220px] pointer-events-auto">
-        <div className="flex items-center gap-3 pb-2 border-b border-white/15">
-          <Search color="white" opacity={0.5} strokeWidth={1.33} size={16} />
-          <input
-            type="text"
-            placeholder="Search place"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent text-sm outline-none w-full placeholder:text-white/40 text-white/40"
-          />
-        </div>
-      </div> */}
+
 
       {/* ── Clear Filters ── */}
       {filterCount !== null && (

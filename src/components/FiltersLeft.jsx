@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useFilterContext } from "@/context/Filter";
 import { sampleArcAtY, ARC_DEFS, ARC_SVG_OFFSET, useSpringT, LEFT_HUG_SHIFT } from "./FilterGlobeArcs";
 
 function lerp(a, b, t) { return a + (b - a) * t; }
@@ -15,7 +16,8 @@ const TIME_MARKERS = [
 const [, , , START_X, START_Y, END_X, END_Y] = ARC_DEFS[0];
 const APEX_Y = (START_Y + END_Y) / 2;
 
-export default function FiltersLeft({ selectedTimeRange, setSelectedTimeRange, apex, zoomProgress = 0 }) {
+export default function FiltersLeft() {
+  const { selectedTimeRange, setSelectedTimeRange, apex, zoomProgress = 0 } = useFilterContext();
   // Same spring as GlobeArcs — dots stay locked to the arc at every frame
   const t = useSpringT(zoomProgress);
 

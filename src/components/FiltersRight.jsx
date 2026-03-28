@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { sampleArcAtY, ARC_DEFS, ARC_SVG_OFFSET, useSpringT, RIGHT_HUG_SHIFT } from "./FilterGlobeArcs";
 import { CheckCircle2 } from "lucide-react";
+import { useFilterContext } from "@/context/Filter";
 
 function lerp(a, b, t) { return a + (b - a) * t; }
 
@@ -70,7 +71,8 @@ const CATEGORIES = [
 const [, , , START_X, START_Y, END_X, END_Y] = ARC_DEFS[1];
 const APEX_Y = (START_Y + END_Y) / 2;
 
-export default function FiltersRight({ selectedFilters, setSelectedFilters, apex, zoomProgress = 0 }) {
+export default function FiltersRight() {
+  const { selectedFilters, setSelectedFilters, apex, zoomProgress = 0 } = useFilterContext();
   const [popupCategory, setPopupCategory] = useState(null);
 
   // Same spring as GlobeArcs — dots stay locked to the arc at every frame

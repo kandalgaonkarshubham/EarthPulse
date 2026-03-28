@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+
 import FilterLayout from "@/components/FilterLayout";
 import FilterCornersUI from "@/components/CornersUI";
 import Loader from "@/components/Loader";
@@ -7,80 +8,19 @@ import Map from "@/components/Map";
 import EQModalNew from "@/components/EQModal";
 import { useFilterContext } from "@/context/Filter";
 
+import Cluster from "./components/Cluster";
+
 export default function App() {
   const {
     earthquakes,
     setEarthquakes,
-    setMagnitudeFilter,
-    setSignificanceFilter,
-    setTsunamiFilter,
-    setStatusFilter,
-    setAlertFilter,
-    setMagnitudeTypeFilter,
-    setTimeFilter,
-    selectedFilters,
-    setSelectedFilters,
-    selectedTimeRange,
-    setSelectedTimeRange,
     selectedEarthquake,
     isModalOpen,
     setIsModalOpen,
-    zoomProgress,
-    setApex,
   } = useFilterContext();
 
-  const [search, setSearch] = useState("");
-
-  const [fetchedTime, setFetchedTime] = useState(" ");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [refetch, setRefetch] = useState(false);
-
-  const handleRefetch = () => {
-    setRefetch(!refetch);
-  };
-
-  // Sync selectedTimeRange to context
-  useEffect(() => {
-    const timeRangeMap = {
-      "1h": 1,
-      "2h": 2,
-      "6h": 6,
-      "12h": 12,
-      "24h": 24,
-      "all": null,
-    };
-    setTimeFilter(timeRangeMap[selectedTimeRange] || null);
-  }, [selectedTimeRange, setTimeFilter]);
-
-  // Sync selectedFilters to context
-  useEffect(() => {
-    const magMap = {
-      "0-2": "0",
-      "2-4": "2",
-      "4-6": "4",
-      "6+": "6",
-    };
-    setMagnitudeFilter(selectedFilters?.magnitude ? (magMap[selectedFilters.magnitude] ?? null) : null);
-
-    const sigMap = {
-      "0-100": "0-100",
-      "100-200": "100-200",
-      "200-300": "200-300",
-      "300+": "300-9999",
-    };
-    setSignificanceFilter(selectedFilters?.significance ? (sigMap[selectedFilters.significance] ?? null) : null);
-
-    setTsunamiFilter(
-      selectedFilters?.tsunami === "yes" ? "1"
-      : selectedFilters?.tsunami === "no" ? "0"
-      : null
-    );
-
-    setStatusFilter(selectedFilters?.status || null);
-    setAlertFilter(selectedFilters?.alert || null);
-    setMagnitudeTypeFilter(selectedFilters?.type || null);
-  }, [selectedFilters, setMagnitudeFilter, setSignificanceFilter, setTsunamiFilter, setStatusFilter, setAlertFilter, setMagnitudeTypeFilter]);
 
   useEffect(() => {
     const fetchEarthquakeData = async () => {
@@ -98,13 +38,6 @@ export default function App() {
 
         const data = await response.json();
         setEarthquakes(data.features);
-        setFetchedTime(
-          new Date().toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "numeric",
-            hour12: true,
-          })
-        );
       } catch (error) {
         setError(error.message);
         setEarthquakes([]);
@@ -115,35 +48,25 @@ export default function App() {
 
     fetchEarthquakeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refetch]);
-
-  const isLeftActive = !!selectedTimeRange && selectedTimeRange !== "all";
-  const isRightActive = Object.values(selectedFilters || {}).some((v) => !!v);
+  }, []);
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-neutral-900 text-white font-sans">
-      <FilterLayout
-        selectedTimeRange={selectedTimeRange}
-        setSelectedTimeRange={setSelectedTimeRange}
-        selectedFilters={selectedFilters}
-        setSelectedFilters={setSelectedFilters}
-      >
+      <FilterLayout>
         {loading ? (
           <Loader />
         ) : earthquakes.length !== 0 ? (
-          <Map />
+          // <Map />
+          <div className="flex items-center justify-center h-full">
+            <Cluster />
+          </div>
         ) : (
           <Error error={error} />
         )}
       </FilterLayout>
 
       <div className="absolute inset-0 z-30 pointer-events-none">
-        <FilterCornersUI
-          search={search}
-          setSearch={setSearch}
-          selectedTimeRange={selectedTimeRange}
-          selectedFilters={selectedFilters}
-        />
+        <FilterCornersUI />
       </div>
 
       {selectedEarthquake && (
