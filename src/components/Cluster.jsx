@@ -45,7 +45,7 @@ export default function Cluster({ value = 0 }) {
         className={`breathe-glow absolute ${config.size} rounded-full ${config.bg} blur-[18px]`}
       />
       <div
-        className={`breathe-dot ${config.size} rounded-full ${config.bg} flex items-center justify-center text-xs text-black`}
+        className={`breathe-dot ${config.size} rounded-full ${config.bg} cursor-pointer flex items-center justify-center text-xs text-black`}
       >
         {value}
       </div>

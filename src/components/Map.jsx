@@ -6,6 +6,8 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import EarthquakePopup from "./EarthquakePopup";
+import PulsatingDot from "./PulsatingDot";
+import Cluster from "./Cluster";
 
 import { useFilterContext } from "@/context/Filter";
 
@@ -25,7 +27,13 @@ export default function Map() {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const lastCoordsRef = useRef({ lng: 0, lat: 0 });
+  const markersRef = useRef({}); // Track markers by earthquake code
+  const earthquakesRef = useRef(earthquakes);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+
+  useEffect(() => {
+    earthquakesRef.current = earthquakes;
+  }, [earthquakes]);
 
   const handleModalChange = (e) => setIsModalOpen(e);
 
@@ -128,6 +136,123 @@ export default function Map() {
     map.on("load", () => {
       setIsMapLoaded(true);
       updateLocationInfo();
+    });
+
+    const updateMarkers = () => {
+      if (!mapRef.current) return;
+
+      // Query all unclustered features and clusters currently in view
+      const features = mapRef.current.queryRenderedFeatures({ layers: ["unclustered-point", "clusters"] });
+      const currentMarkers = {};
+
+      features.forEach((feature) => {
+        const isCluster = !!feature.properties.point_count;
+        const code = isCluster ? `cluster_${feature.properties.cluster_id}` : feature.properties.code;
+        const coords = feature.geometry.coordinates;
+
+        if (!markersRef.current[code]) {
+          // Create a new marker
+          const el = document.createElement("div");
+          el.className = isCluster ? "custom-cluster-marker" : "custom-marker";
+          
+          const marker = new mapboxgl.Marker({ element: el })
+            .setLngLat(coords)
+            .addTo(mapRef.current);
+
+          // Add click listener
+          el.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (isCluster) {
+              handleClusterClick(feature);
+            } else {
+              handleMarkerClick(feature);
+            }
+          });
+
+          const root = createRoot(el);
+          if (isCluster) {
+            root.render(<Cluster value={feature.properties.point_count} />);
+          } else {
+            const mag = feature.properties.mag;
+            let variant = "minor";
+            if (mag >= 6) variant = "severe";
+            else if (mag >= 4) variant = "moderate";
+            root.render(<PulsatingDot variant={variant} />);
+          }
+          
+          markersRef.current[code] = { marker, root };
+        }
+        currentMarkers[code] = true;
+      });
+
+      // Remove markers that are no longer in view
+      Object.keys(markersRef.current).forEach((code) => {
+        if (!currentMarkers[code]) {
+          markersRef.current[code].marker.remove();
+          markersRef.current[code].root.unmount();
+          delete markersRef.current[code];
+        }
+      });
+    };
+
+    const handleClusterClick = (feature) => {
+      const clusterId = feature.properties.cluster_id;
+      mapRef.current
+        .getSource("earthquakes")
+        .getClusterExpansionZoom(clusterId, (err, zoom) => {
+          if (err) return;
+          mapRef.current.easeTo({
+            center: feature.geometry.coordinates,
+            zoom: zoom,
+          });
+        });
+    };
+
+    const handleMarkerClick = (clickedFeature) => {
+      const earthquake = earthquakesRef.current.find(q => q.properties.code === clickedFeature.properties.code) || clickedFeature;
+      const coordinates = clickedFeature.geometry.coordinates.slice(0, 2);
+
+      mapRef.current.easeTo({ center: coordinates, zoom: 8 });
+
+      const eventTime = new Date(earthquake.properties.time);
+      const timeStr = eventTime.toLocaleString('en-US', { month: 'short', day: '2-digit' }).toUpperCase() + ' · ' +
+                    eventTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const eventType = (earthquake.properties.type || "Seismic Event").toUpperCase();
+
+      const popup = new mapboxgl.Popup({
+        offset: 25,
+        closeButton: false,
+        closeOnMove: false,
+        className: "futuristic-popup",
+      }).setLngLat(coordinates);
+
+      const popupNode = document.createElement("div");
+      const root = createRoot(popupNode);
+      root.render(
+        <EarthquakePopup earthquake={earthquake} timeStr={timeStr} eventType={eventType} />
+      );
+
+      popup.setDOMContent(popupNode).addTo(mapRef.current);
+      setSelectedEarthquake(earthquake);
+
+      popup.getElement().addEventListener("click", () => {
+        handleModalChange(true);
+      });
+
+      popup.on("close", () => {
+        setTimeout(() => root.unmount(), 0);
+      });
+    };
+
+    map.on("load", () => {
+      // Run on move/zoom
+      map.on("move", updateMarkers);
+      map.on("moveend", updateMarkers);
+      map.on("data", (e) => {
+        if (e.sourceId === "earthquakes" && e.isSourceLoaded) {
+          updateMarkers();
+        }
+      });
 
       map.addSource("earthquakes", {
         type: "geojson",
@@ -146,27 +271,9 @@ export default function Map() {
         source: "earthquakes",
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": [
-            "step",
-            ["get", "point_count"],
-            "#baebff",
-            20,
-            "#bebcfc",
-            40,
-            "#d689ff",
-            60,
-            "#a564d3",
-          ],
-          "circle-radius": [
-            "step",
-            ["get", "point_count"],
-            20,
-            100,
-            30,
-            750,
-            40,
-          ],
-          "circle-emissive-strength": 1,
+          "circle-radius": 20,
+          "circle-color": "rgba(0,0,0,0)",
+          "circle-opacity": 0,
         },
       });
       map.addLayer({
@@ -180,9 +287,7 @@ export default function Map() {
           "text-size": 12,
         },
         paint: {
-          "text-color": "#000000",
-          "text-halo-color": "rgba(255,255,255,0.7)",
-          "text-halo-width": 1,
+          "text-opacity": 0,
         }
       });
 
@@ -192,87 +297,15 @@ export default function Map() {
         source: "earthquakes",
         filter: ["!", ["has", "point_count"]],
         paint: {
-          "circle-color": [
-            "step",
-            ["get", "mag"],
-            "#eed7a1",
-            3,
-            "#84cdee",
-            5,
-            "#ffbcda",
-            7,
-            "#eb2d3a",
-          ],
-          "circle-radius": [
-            "interpolate",
-            ["linear"],
-            ["get", "mag"],
-            2, 8,
-            6, 16,
-            10, 24,
-            14, 32,
-          ],
-          "circle-blur": 1,
-          "circle-opacity": 0.7,
-          "circle-emissive-strength": 1,
+          "circle-radius": 20, // Hit area
+          "circle-color": "rgba(0,0,0,0)", // Invisible hit area
+          "circle-opacity": 0,
         },
       });
 
-      map.on("click", "clusters", (e) => {
-        const features = map.queryRenderedFeatures(e.point, {
-          layers: ["clusters"],
-        });
-        const clusterId = features[0].properties.cluster_id;
-        map
-          .getSource("earthquakes")
-          .getClusterExpansionZoom(clusterId, (err, zoom) => {
-            if (err) return;
-            map.easeTo({
-              center: features[0].geometry.coordinates,
-              zoom: zoom,
-            });
-          });
-      });
+      // Clusters handle their own clicks now
 
-      map.on("click", "unclustered-point", (e) => {
-        const clickedFeature = e.features[0];
-        const earthquake = earthquakes.find(q => q.properties.code === clickedFeature.properties.code) || clickedFeature;
-        const coordinates = clickedFeature.geometry.coordinates.slice(0, 2);
-
-        map.easeTo({ center: coordinates, zoom: 8 });
-
-        // Wait for zoom to finish, then show popup
-        map.once("moveend", () => {
-          const eventTime = new Date(earthquake.properties.time);
-          const timeStr = eventTime.toLocaleString('en-US', { month: 'short', day: '2-digit' }).toUpperCase() + ' · ' +
-                        eventTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-          const eventType = (earthquake.properties.type || "Seismic Event").toUpperCase();
-
-          const popup = new mapboxgl.Popup({
-            offset: 25,
-            closeButton: false,
-            closeOnMove: false,
-            className: "futuristic-popup",
-          }).setLngLat(coordinates);
-
-          const popupNode = document.createElement("div");
-          const root = createRoot(popupNode);
-          root.render(
-            <EarthquakePopup earthquake={earthquake} timeStr={timeStr} eventType={eventType} />
-          );
-
-          popup.setDOMContent(popupNode).addTo(map);
-          setSelectedEarthquake(earthquake);
-
-          popup.getElement().addEventListener("click", () => {
-            handleModalChange(true);
-          });
-
-          popup.on("close", () => {
-            setTimeout(() => root.unmount(), 0);
-          });
-        });
-      });
+      // Markers handle their own clicks now
 
       map.on("mouseenter", "clusters", () => {
         map.getCanvas().style.cursor = "pointer";
@@ -291,7 +324,17 @@ export default function Map() {
       resizeObserver.disconnect();
       map.off("zoom", handleZoom);
       map.off("moveend", debouncedUpdateLocation);
+      map.off("move", updateMarkers);
+      map.off("moveend", updateMarkers);
       debouncedUpdateLocation.cancel();
+      
+      // Cleanup markers
+      Object.keys(markersRef.current).forEach((code) => {
+        markersRef.current[code].marker.remove();
+        markersRef.current[code].root.unmount();
+      });
+      markersRef.current = {};
+
       map.remove();
       mapRef.current = null;
     };

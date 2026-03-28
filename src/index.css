@@ -417,7 +417,7 @@ body {
 
 @keyframes sonar-burst {
   0%   { transform: scale(1);  opacity: 0.5; }
-  100% { transform: scale(18); opacity: 0; }
+  100% { transform: scale(12); opacity: 0; }
 }
 .sonar-field { animation: sonar-burst 2s ease-out infinite; }
 .sonar-field:nth-child(2) { animation-delay: 1s; }
@@ -439,6 +439,19 @@ body {
 .heartbeat-dot  { animation: heartbeat      2s ease-in-out infinite; }
 .heartbeat-ring { animation: heartbeat-ring 2s ease-out    infinite; }
 .heartbeat-ring:nth-child(2) { animation-delay: 0.15s; }
+
+
+@keyframes beacon-core {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.25); }
+}
+@keyframes beacon-ring {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(4); opacity: 0; }
+}
+.beacon-core { animation: beacon-core 1.5s ease-in-out infinite; }
+.beacon-ring { animation: beacon-ring 1.5s ease-out infinite; }
+.beacon-ring:nth-child(2) { animation-delay: 0.5s; }
 
 
 .wave-ring {

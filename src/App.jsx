@@ -9,6 +9,7 @@ import EQModalNew from "@/components/EQModal";
 import { useFilterContext } from "@/context/Filter";
 
 import Cluster from "./components/Cluster";
+import PulsatingDot from "./components/PulsatingDot";
 
 export default function App() {
   const {
@@ -56,10 +57,13 @@ export default function App() {
         {loading ? (
           <Loader />
         ) : earthquakes.length !== 0 ? (
-          // <Map />
-          <div className="flex items-center justify-center h-full">
-            <Cluster />
-          </div>
+          <Map />
+          // <div className="w-full h-full flex justify-center items-center">
+          //   <PulsatingDot variant="minor"/>
+          //   <PulsatingDot variant="moderate"/>
+          //   <PulsatingDot variant="strong"/>
+          //   <PulsatingDot variant="severe"/>
+          // </div>
         ) : (
           <Error error={error} />
         )}
