@@ -32,10 +32,10 @@ function Heartbeat() {
 
 function Beacon() {
   return (
-    <div class="relative w-24 h-24 flex items-center justify-center">
-      <div class="beacon-ring absolute size-4 rounded-full border border-pink-700 border-[1.5px]"></div>
-      <div class="beacon-ring absolute size-4 rounded-full border border-pink-700 border-[1.5px]"></div>
-      <div class="beacon-core size-4 rounded-full bg-pink-700 z-10 shadow-[0_0_12px_4px_hsl(332.1,100%,38.8%,0.5)]"></div>
+    <div className="relative w-24 h-24 flex items-center justify-center">
+      <div className="beacon-ring absolute size-4 rounded-full border border-pink-700 border-[1.5px]"></div>
+      <div className="beacon-ring absolute size-4 rounded-full border border-pink-700 border-[1.5px]"></div>
+      <div className="beacon-core size-4 rounded-full bg-pink-700 z-10 shadow-[0_0_12px_4px_hsl(332.1,100%,38.8%,0.5)]"></div>
     </div>
   );
 }

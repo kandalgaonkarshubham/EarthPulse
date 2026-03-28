@@ -176,7 +176,8 @@ export default function Map() {
             const mag = feature.properties.mag;
             let variant = "minor";
             if (mag >= 6) variant = "severe";
-            else if (mag >= 4) variant = "moderate";
+            else if (mag >= 4) variant = "strong";
+            else if (mag >= 2) variant = "moderate";
             root.render(<PulsatingDot variant={variant} />);
           }
           
