@@ -1,8 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Quicksand:wght@300..700&family=Syne:wght@400..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Inter:wght@100..900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-card-green {
+    background: linear-gradient(180deg, rgba(34,197,94,0.02) 0%, rgba(34,197,94,0.10) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 10px 40px -10px rgba(34,197,94,0.40), inset 0 0 20px rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .glass-card-yellow {
+    background: linear-gradient(180deg, rgba(245,158,11,0.02) 0%, rgba(245,158,11,0.10) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 10px 40px -10px rgba(245,158,11,0.35), inset 0 0 20px rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+}
 
 
 body,
@@ -18,8 +44,24 @@ body {
 @layer base {
   :root {
     --radius: 0.5rem;
+    --background: #050705;
+    --surface: #0d110d;
+    --surface-bright: #1a1f1a;
+    --primary: #10b981;
+    --primary-container: #064e3b;
+    --secondary: #f59e0b;
+    --secondary-container: #78350f;
+    --tertiary: #ea580c;
+    --tertiary-container: #7c2d12;
+    --on-background: #e2e8f0;
+    --on-surface: #f1f5f9;
+    --outline: #3d4a3d;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════ */
+/* MAPBOX OVERRIDES — cannot be expressed in Tailwind */
+/* ════════════════════════════════════════════════════════════════════ */
 
 .mapboxgl-ctrl-bottom-right,
 .mapboxgl-ctrl-bottom-left {
@@ -29,78 +71,401 @@ body {
   border-top-color: #181717 !important;
 }
 
-.eq-popup .mapboxgl-popup-content {
-  background: #181717 !important;
-  border-radius: 0.5rem;
-  color: white;
-  font-family: Quicksand;
-  display: flex;
-  flex-direction: column;
+.futuristic-popup .mapboxgl-popup-content {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
   cursor: pointer;
 }
 
-.eq-popup .mapboxgl-popup-content h3 {
-  text-decoration: underline;
+.futuristic-popup .mapboxgl-popup-tip {
+  border-top-color: transparent !important;
 }
 
-.eq-popup .mapboxgl-popup-content p span {
-  font-weight: 900;
+/* ════════════════════════════════════════════════════════════════════ */
+/* KEYFRAME ANIMATIONS — used by Tailwind arbitrary animate-[] values */
+/* ════════════════════════════════════════════════════════════════════ */
+
+@keyframes popupSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
-.eq-popup .mapboxgl-popup-content .readmore {
-  font-weight: 900;
-  font-size: smaller;
-  text-align: center;
-  text-transform: uppercase;
-  margin-top: 5px;
+@keyframes gridPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
 }
 
-/* Loader */
-
-.lds-ring,
-.lds-ring div {
-  box-sizing: border-box;
+@keyframes scanLines {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(calc(100% + 60px)); }
 }
 
-.lds-ring {
-  display: inline-block;
-  position: relative;
-  width: 80px;
-  height: 80px;
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 25px currentColor, inset 0 0 15px rgba(0, 0, 0, 0.3); }
+  50% { box-shadow: 0 0 35px currentColor, inset 0 0 20px rgba(0, 0, 0, 0.4), 0 0 50px currentColor; }
 }
 
-.lds-ring div {
-  color: white;
-  box-sizing: border-box;
-  display: block;
-  position: absolute;
-  width: 64px;
-  height: 64px;
-  margin: 8px;
-  border: 8px solid currentColor;
-  border-radius: 100%;
-  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-  border-color: currentColor transparent transparent transparent;
+@keyframes magnitudePulse {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.4), inset 0 0 20px rgba(0, 240, 255, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(0, 240, 255, 0.7), inset 0 0 20px rgba(0, 240, 255, 0.2), 0 0 80px rgba(0, 240, 255, 0.3);
+  }
 }
 
-.lds-ring div:nth-child(1) {
-  animation-delay: -0.45s;
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
 }
 
-.lds-ring div:nth-child(2) {
-  animation-delay: -0.3s;
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.lds-ring div:nth-child(3) {
-  animation-delay: -0.15s;
+@keyframes gridPulseModal {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes sectionDotPulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+@keyframes intensityGlow {
+  0%, 100% { box-shadow: 0 0 5px currentColor; opacity: 0.6; }
+  50% { box-shadow: 0 0 12px currentColor; opacity: 1; }
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes popoverSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes popoverSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 @keyframes lds-ring {
-  0% {
-    transform: rotate(0deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
-  100% {
-    transform: rotate(360deg);
+@keyframes pulse-amb {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+
+/* ════════════════════════════════════════════════════════════════════ */
+/* EQ POPUP — old popup (legacy, uses ::before/::after pseudo-elements) */
+/* ════════════════════════════════════════════════════════════════════ */
+
+/* HUD Grid background pattern */
+.eq-popup-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(0deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: gridPulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Scan line effect */
+.eq-popup-content::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 240, 255, 0.1) 50%,
+    transparent 100%
+  );
+  animation: scanLines 3s linear infinite;
+  pointer-events: none;
+  height: 60px;
+}
+
+/* ════════════════════════════════════════════════════════════════════ */
+/* EQ MODAL (old HUD modal) — pseudo-elements & scrollbar only */
+/* ════════════════════════════════════════════════════════════════════ */
+
+/* HUD Grid pattern background */
+.eq-modal-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(0deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: gridPulseModal 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Header bottom gradient accent line */
+.eq-modal-header::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.6), transparent);
+}
+
+/* Section top gradient accent line */
+.eq-modal-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent);
+}
+
+/* Section title animated dot */
+.eq-modal-section-title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #00f0ff;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #00f0ff;
+  animation: sectionDotPulse 2s ease-in-out infinite;
+}
+
+/* Footer top gradient accent line */
+.eq-modal-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.5), transparent);
+}
+
+/* Intensity bar animated end glow */
+.eq-modal-intensity-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: rgba(255, 255, 255, 0.5);
+  animation: intensityGlow 1.5s ease-in-out infinite;
+}
+
+/* Enhanced HUD scrollbar */
+.eq-modal-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.eq-modal-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 240, 255, 0.08);
+  border-left: 1px solid rgba(0, 240, 255, 0.1);
+}
+
+.eq-modal-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.6) 0%, rgba(0, 160, 255, 0.4) 100%);
+  box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.eq-modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.9) 0%, rgba(0, 160, 255, 0.6) 100%);
+  box-shadow: inset 0 0 15px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.4);
+}
+
+/* ════════════════════════════════════════════════════════════════════ */
+/* ELEGANT UTILITY CLASSES — used by EQModalNew (already full Tailwind) */
+/* These cannot be expressed cleanly in Tailwind (backdrop, box-shadow combos) */
+/* ════════════════════════════════════════════════════════════════════ */
+
+.glass-panel {
+  background: rgba(13, 17, 13, 0.7);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.glass-highlight {
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.05), inset 0 0 15px rgba(255, 255, 255, 0.02);
+}
+
+.rich-glow-emerald {
+  text-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+}
+
+.rich-glow-amber {
+  text-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+}
+
+.rich-glow-copper {
+  text-shadow: 0 0 15px rgba(234, 88, 12, 0.4);
+}
+
+.rich-glow-red {
+  text-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+}
+
+.vibrant-gradient {
+  background: linear-gradient(135deg, #0d110d 0%, #1a1f1a 100%);
+}
+
+.pulse-amber {
+  animation: pulse-amb 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.gold-border {
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
+.emerald-border {
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.orange-border {
+  border: 1px solid rgba(234, 88, 12, 0.3);
+}
+
+.red-border {
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.slate-border {
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+/* ════════════════════════════════════════════════════════════════════ */
+/* Clusters and Points — elements shown on map */
+/* ════════════════════════════════════════════════════════════════════ */
+
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 8px 2px var(--glow-color-low);
   }
+  50% {
+    transform: scale(var(--scale-peak));
+    box-shadow: 0 0 30px 10px var(--glow-color-high);
+  }
+}
+@keyframes breathe-glow {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50%      { transform: scale(4); opacity: 0.6; }
+}
+.breathe-dot  { animation: breathe      3s ease-in-out infinite; }
+.breathe-glow { animation: breathe-glow 3s ease-in-out infinite; }
+
+
+@keyframes sonar-burst {
+  0%   { transform: scale(1);  opacity: 0.5; }
+  100% { transform: scale(12); opacity: 0; }
+}
+.sonar-field { animation: sonar-burst 2s ease-out infinite; }
+.sonar-field:nth-child(2) { animation-delay: 1s; }
+
+
+@keyframes heartbeat {
+  0%  { transform: scale(1); }
+  14% { transform: scale(1.35); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.2); }
+  70% { transform: scale(1); }
+}
+@keyframes heartbeat-ring {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  14%  { transform: scale(2.5); opacity: 0.3; }
+  28%  { transform: scale(3.5); opacity: 0; }
+  100% { transform: scale(3.5); opacity: 0; }
+}
+.heartbeat-dot  { animation: heartbeat      2s ease-in-out infinite; }
+.heartbeat-ring { animation: heartbeat-ring 2s ease-out    infinite; }
+.heartbeat-ring:nth-child(2) { animation-delay: 0.15s; }
+
+
+@keyframes beacon-core {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.25); }
+}
+@keyframes beacon-ring {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(4); opacity: 0; }
+}
+.beacon-core { animation: beacon-core 1.5s ease-in-out infinite; }
+.beacon-ring { animation: beacon-ring 1.5s ease-out infinite; }
+.beacon-ring:nth-child(2) { animation-delay: 0.5s; }
+
+
+.wave-ring {
+  position: absolute;
+  border-radius: 50%;
+  width: 12px; height: 12px;
+  border: 1.5px solid oklch(58.6% 0.253 17.585);
+  animation: wave-expand 2s cubic-bezier(0.1, 0.6, 0.3, 1) infinite;
+}
+.wave-ring:nth-child(1) { animation-delay: 0s; }
+.wave-ring:nth-child(2) { animation-delay: 0.6s; }
+.wave-ring:nth-child(3) { animation-delay: 1.2s; }
+.wave-ring:nth-child(4) { animation-delay: 1.8s; }
+@keyframes wave-expand {
+  0%   { transform: scale(1);  opacity: 0.6; border-width: 1.5px; }
+  100% { transform: scale(6); opacity: 0;   border-width: 0.5px; }
 }

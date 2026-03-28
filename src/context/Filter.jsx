@@ -1,74 +1,171 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const FilterContext = createContext();
 
 export const FilterProvider = ({ children }) => {
   const [earthquakes, setEarthquakes] = useState([]);
-  const [magnitudeFilter, setMagnitudeFilter] = useState(null);
-  const [magnitudeTypeFilter, setMagnitudeTypeFilter] = useState(null);
-  const [significanceFilter, setSignificanceFilter] = useState(null);
-  const [tsunamiFilter, setTsunamiFilter] = useState(null);
-  const [statusFilter, setStatusFilter] = useState(null);
-  const [alertFilter, setAlertFilter] = useState(null);
+  const [selectedFilters, setSelectedFilters] = useState({
+    magnitude: null,
+    significance: null,
+    tsunami: null,
+    status: null,
+    alert: null,
+    type: null,
+  });
+  const [selectedTimeRange, setSelectedTimeRange] = useState("all");
   const [filterCount, setFilterCount] = useState(null);
-  const [resetMap, setResetMap] = useState(null);
+  const [location, setLocation] = useState("");
+  const [hemisphere, setHemisphere] = useState("");
+  const [selectedEarthquake, setSelectedEarthquake] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [apex, setApex] = useState(null);
+  const [filteredEarthquakes, setFilteredEarthquakes] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const getFilteredData = () => {
-    const filteredData = earthquakes.filter((quake) => {
-      const { mag, magType, sig, tsunami, status, alert } = quake.properties;
+  // ── zoom level reported by Map.jsx ─────────────────────────────────────────
+  const [mapZoom, setMapZoom] = useState(2);
+
+  useEffect(() => {
+    const fetchIPLocation = async () => {
+      try {
+        const response = await fetch("https://ipapi.co/json/");
+        const data = await response.json();
+        if (data.latitude && data.longitude) {
+          setUserLocation(prev => prev || {
+            lat: data.latitude,
+            lng: data.longitude,
+          });
+        }
+      } catch (err) {
+        console.log("IP Location error:", err);
+      }
+    };
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      }, (err) => {
+        console.log("Geolocation error:", err);
+        fetchIPLocation();
+      });
+    } else {
+      fetchIPLocation();
+    }
+  }, []);
+
+  // ── screen dimensions, updated on resize ────────────────────────────────
+  const [screenSize, setScreenSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1440,
+    height: typeof window !== 'undefined' ? window.innerHeight : 812
+  });
+
+  useEffect(() => {
+    const onResize = () => setScreenSize({
+      width: window.innerWidth,
+      height: window.innerHeight
+    });
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // ── Dynamic zoom threshold ────────────────────────────────────────────────
+  const FUDGE = 0;
+  const arcScreenX  = (495 / 1440) * screenSize.width;
+  const globeRadius = screenSize.width / 2 - arcScreenX;
+  const ZOOM_THRESHOLD = Math.log2((globeRadius * 2 * Math.PI) / 256) + FUDGE;
+
+  const zoomProgress = mapZoom >= ZOOM_THRESHOLD ? 1 : 0;
+  // ─────────────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (earthquakes.length === 0) {
+      setFilterCount(null);
+      return;
+    }
+
+    const magMap = { "0-2": 0, "2-4": 2, "4-6": 4, "6+": 6 };
+    const sigMap = { "0-100": "0-100", "100-200": "100-200", "200-300": "200-300", "300+": "300-9999" };
+    const timeRangeMap = { "1h": 1, "2h": 2, "6h": 6, "12h": 12, "24h": 24, "all": null };
+
+    const magnitudeMin = selectedFilters.magnitude ? magMap[selectedFilters.magnitude] : null;
+    const significanceFilter = selectedFilters.significance ? sigMap[selectedFilters.significance] : null;
+    const tsunamiFilter = selectedFilters.tsunami === "yes" ? 1 : selectedFilters.tsunami === "no" ? 0 : null;
+    const timeFilter = timeRangeMap[selectedTimeRange];
+
+    const filtered = earthquakes.filter((quake) => {
+      const { mag, sig, tsunami, status, alert, time, magType } = quake.properties;
 
       const magnitude = parseFloat(mag);
       const magnitudeMatches =
-        magnitudeFilter === null ||
-        (magnitudeFilter == "0"
-          ? magnitude <= 0
-          : magnitude >= parseFloat(magnitudeFilter) &&
-            magnitude <= parseFloat(magnitudeFilter) + 1);
+        magnitudeMin === null ||
+        (magnitudeMin === 0
+          ? magnitude >= 0 && magnitude < 2
+          : magnitude >= magnitudeMin &&
+            magnitude < (magnitudeMin >= 6 ? Infinity : magnitudeMin + 2));
 
       const significance = parseInt(sig, 10);
       const significanceMatches =
         significanceFilter === null ||
         (() => {
-          const [minSignificance, maxSignificance] = significanceFilter
+          const [minSignificance, maxSignificance] = (significanceFilter || "")
             .split("-")
             .map(Number);
           return (
-            significance >= minSignificance && significance <= maxSignificance
+            significance >= minSignificance && significance <= (maxSignificance || Infinity)
           );
+        })();
+
+      const timeMatches =
+        timeFilter === null ||
+        (() => {
+          const now = Date.now();
+          const hoursAgo = now - timeFilter * 60 * 60 * 1000;
+          return time >= hoursAgo;
         })();
 
       return (
         magnitudeMatches &&
-        (magnitudeTypeFilter === null || magType == magnitudeTypeFilter) &&
+        (!selectedFilters.type || magType === selectedFilters.type) &&
         significanceMatches &&
-        (tsunamiFilter === null || tsunami == tsunamiFilter) &&
-        (statusFilter === null || status == statusFilter) &&
-        (alertFilter === null || alert == alertFilter)
+        (tsunamiFilter === null || tsunami === tsunamiFilter) &&
+        (!selectedFilters.status || status === selectedFilters.status) &&
+        (!selectedFilters.alert || alert === selectedFilters.alert) &&
+        timeMatches
       );
     });
-    if (
-      magnitudeFilter != null ||
-      magnitudeTypeFilter != null ||
-      significanceFilter != null ||
-      tsunamiFilter != null ||
-      statusFilter != null ||
-      alertFilter != null
-    ) {
-      setFilterCount(filteredData.length);
+
+    setFilteredEarthquakes(filtered);
+    if (currentIndex >= filtered.length) {
+      setCurrentIndex(0);
     }
-    setResetMap(true);
-    return filteredData;
-  };
+
+    const isAnyFilterActive =
+      selectedFilters.magnitude != null ||
+      selectedFilters.type != null ||
+      selectedFilters.significance != null ||
+      selectedFilters.tsunami != null ||
+      selectedFilters.status != null ||
+      selectedFilters.alert != null ||
+      selectedTimeRange !== "all";
+
+    setFilterCount(isAnyFilterActive ? filtered.length : null);
+  }, [earthquakes, selectedFilters, selectedTimeRange]);
 
   const resetFilters = () => {
-    setMagnitudeFilter(null);
-    setMagnitudeTypeFilter(null);
-    setSignificanceFilter(null);
-    setTsunamiFilter(null);
-    setStatusFilter(null);
-    setAlertFilter(null);
+    setSelectedFilters({
+      magnitude: null,
+      significance: null,
+      tsunami: null,
+      status: null,
+      alert: null,
+      type: null,
+    });
+    setSelectedTimeRange("all");
     setFilterCount(null);
-    setResetMap(true);
   };
 
   return (
@@ -76,22 +173,33 @@ export const FilterProvider = ({ children }) => {
       value={{
         earthquakes,
         setEarthquakes,
-        magnitudeFilter,
-        setMagnitudeFilter,
-        magnitudeTypeFilter,
-        setMagnitudeTypeFilter,
-        significanceFilter,
-        setSignificanceFilter,
-        tsunamiFilter,
-        setTsunamiFilter,
-        statusFilter,
-        setStatusFilter,
-        alertFilter,
-        setAlertFilter,
+        selectedFilters,
+        setSelectedFilters,
+        selectedTimeRange,
+        setSelectedTimeRange,
         filterCount,
-        getFilteredData,
         resetFilters,
-        resetMap,
+        location,
+        setLocation,
+        hemisphere,
+        setHemisphere,
+        mapZoom,
+        setMapZoom,
+        zoomProgress,
+        selectedEarthquake,
+        setSelectedEarthquake,
+        isModalOpen,
+        setIsModalOpen,
+        userLocation,
+        setUserLocation,
+        apex,
+        setApex,
+        screenWidth: screenSize.width,
+        screenHeight: screenSize.height,
+        screenSize,
+        filteredEarthquakes,
+        currentIndex,
+        setCurrentIndex,
       }}
     >
       {children}

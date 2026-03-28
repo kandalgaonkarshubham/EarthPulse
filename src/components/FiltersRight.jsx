@@ -1,0 +1,187 @@
+import { useMemo, useState } from "react";
+import { sampleArcAtY, ARC_DEFS, ARC_SVG_OFFSET, useSpringT, RIGHT_HUG_SHIFT } from "./FilterGlobeArcs";
+import { CheckCircle2 } from "lucide-react";
+import { useFilterContext } from "@/context/Filter";
+import { FILTER_DATA, CATEGORIES } from "@/lib/filterData";
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+
+const [, , , START_X, START_Y, END_X, END_Y] = ARC_DEFS[1];
+const APEX_Y = (START_Y + END_Y) / 2;
+
+export default function FiltersRight({ rightHugShift = RIGHT_HUG_SHIFT, rightBaseShift = 0 }) {
+  const { 
+    selectedFilters, 
+    setSelectedFilters, 
+    apex, 
+    zoomProgress = 0,
+    screenWidth,
+    screenHeight
+  } = useFilterContext();
+  const [popupCategory, setPopupCategory] = useState(null);
+
+  // Same spring as GlobeArcs — dots stay locked to the arc at every frame
+  const t = useSpringT(zoomProgress);
+
+  const markers = useMemo(() => {
+    if (!apex) {
+      return CATEGORIES.map((cat) => ({
+        ...cat,
+        ...FILTER_DATA[cat.key],
+        x: 625 + ARC_SVG_OFFSET.x,
+        y: cat.y + ARC_SVG_OFFSET.y,
+      }));
+    }
+
+    const apexX = apex.right.middle;
+
+    return CATEGORIES.map((cat) => {
+      const localY = cat.y - ARC_SVG_OFFSET.y;
+
+      const curvedPt  = sampleArcAtY(START_X, START_Y, apexX, APEX_Y, END_X, END_Y, localY);
+      const straightX = END_X;
+      const straightY = localY;
+
+      const dotX     = lerp(curvedPt.x, straightX, t) + ARC_SVG_OFFSET.x;
+      const dotY     = lerp(curvedPt.y, straightY, t) + ARC_SVG_OFFSET.y;
+      const hugShift = lerp(rightBaseShift, rightHugShift, t);
+
+      return { ...cat, ...FILTER_DATA[cat.key], x: dotX + hugShift, y: dotY };
+    });
+  }, [apex, t, rightHugShift, rightBaseShift]);
+
+  const handleOptionClick = (category, value) => {
+    setSelectedFilters((prev) => ({
+      ...prev,
+      [category]: prev?.[category] === value ? null : value,
+    }));
+    setPopupCategory(null);
+  };
+
+  return (
+    <>
+      {markers.map((marker) => {
+        const selectedValue = selectedFilters?.[marker.key];
+        const isActive = !!selectedValue;
+        const displayLabel = isActive
+          ? marker.options.find(opt => opt.value === selectedValue)?.label || marker.label
+          : marker.label;
+        const isPopupOpen = popupCategory === marker.key;
+
+        return (
+          <g key={marker.key}>
+            <g
+              onClick={() => setPopupCategory(isPopupOpen ? null : marker.key)}
+              style={{ cursor: "pointer" }}
+            >
+              {isActive ? (
+                <circle cx={marker.x} cy={marker.y} r="2.5" fill="#f59e0b" filter="url(#dotGlow)" />
+              ) : (
+                <circle cx={marker.x} cy={marker.y} r="1.5" fill="rgba(255,255,255,0.2)" />
+              )}
+              <foreignObject
+                x={marker.x + 10}
+                y={marker.y - 12}
+                width={70}
+                height={24}
+                className="overflow-visible"
+              >
+                <div
+                  className={`flex items-center justify-center h-full rounded-[10px] px-3 transition-all duration-700 ease-in-out border cursor-pointer ${
+                    zoomProgress === 1
+                      ? (isActive ? 'glass-card-yellow scale-110 shadow-[0_0_20px_rgba(245,158,11,0.3)]' : 'glass-card')
+                      : 'bg-transparent shadow-none border-transparent'
+                  }`}
+                >
+                  <span
+                    className={`text-[10px] uppercase font-bold tracking-wider transition-colors duration-500 leading-none ${
+                      isActive ? 'text-amber-500' : (zoomProgress === 1 ? 'text-white/70' : 'text-[#6C7083]')
+                    }`}
+                  >
+                    {displayLabel}
+                  </span>
+                </div>
+              </foreignObject>
+            </g>
+
+            {isPopupOpen && (() => {
+              const scale = screenHeight / 812;
+              const svgRightEdge = 720 + (screenWidth / 2) / scale;
+
+              const popupWidth = 140;
+              const popupHeight = marker.options.length * 40 + 8;
+
+              // Calculate horizontal position
+              let popupX = marker.x + 80;
+              if (popupX + popupWidth > svgRightEdge - 10) { 
+                // Flip to left side if it would go off-screen
+                popupX = marker.x - popupWidth - 40;
+              }
+
+              // Calculate vertical position
+              let popupY = marker.y - (popupHeight / 2);
+
+              // Clamp vertical to keep it within view
+              if (popupY < 10) {
+                popupY = 10;
+              } else if (popupY + popupHeight > 802) { // 812 - 10 margin
+                popupY = 812 - popupHeight - 10;
+              }
+
+              return (
+                <g transform={`translate(${popupX}, ${popupY})`}>
+                  <rect x="-2000" y="-2000" width="5000" height="5000" fill="transparent" onClick={() => setPopupCategory(null)} />
+                  <foreignObject
+                    width={popupWidth + 60}
+                    height={popupHeight + 60}
+                    x="-30"
+                    y="-30"
+                    className="overflow-visible pointer-events-none"
+                  >
+                    <div className="p-[30px] pointer-events-auto">
+                      <div
+                        className="glass-panel rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden animate-[popoverSlide_0.3s_ease-out]"
+                        style={{ width: popupWidth, minHeight: popupHeight }}
+                      >
+                        <div className="p-2 space-y-1">
+                          {marker.options.map((opt) => {
+                            const isOptSelected = selectedFilters[marker.key] === opt.value;
+                            return (
+                              <div
+                                key={opt.value}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOptionClick(marker.key, opt.value);
+                                }}
+                                className={`
+                                  px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 flex items-center justify-between group
+                                  ${isOptSelected
+                                    ? "bg-secondary/20 text-white border border-secondary/30"
+                                    : "text-slate-400 hover:bg-white/5 hover:text-white border border-transparent"}
+                                `}
+                              >
+                                <span className={`text-[11px] font-bold tracking-wide uppercase font-mono ${isOptSelected ? 'rich-glow-amber' : ''}`}>
+                                  {opt.label}
+                                </span>
+                                {isOptSelected ? (
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-secondary" />
+                                ) : (
+                                  <div className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover:bg-slate-500 transition-colors" />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </foreignObject>
+                </g>
+              );
+            })()}
+          </g>
+        );
+      })}
+    </>
+  );
+}

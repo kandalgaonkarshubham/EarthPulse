@@ -1,27 +1,26 @@
 import { useState, useEffect } from "react";
 
-import Header from "@/components/Header";
+import FilterLayout from "@/components/FilterLayout";
+import FilterCornersUI from "@/components/CornersUI";
 import Loader from "@/components/Loader";
 import Error from "@/components/Error";
 import Map from "@/components/Map";
-
+import EQModalNew from "@/components/EQModal";
 import { useFilterContext } from "@/context/Filter";
-import FilterDrawer from "./components/FilterDrawer";
 
-function App() {
-  const { earthquakes, setEarthquakes } = useFilterContext();
+import Cluster from "./components/Cluster";
 
-  const [drawer, setDrawer] = useState(false);
-  const toggleDrawer = () => setDrawer(!drawer);
-
-  const [fetchedTime, setFetchedTime] = useState(" ");
+export default function App() {
+  const {
+    earthquakes,
+    setEarthquakes,
+    selectedEarthquake,
+    isModalOpen,
+    setIsModalOpen,
+  } = useFilterContext();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [refetch, setRefetch] = useState(false);
-  const handleRefetch = () => {
-    setRefetch(!refetch);
-  };
 
   useEffect(() => {
     const fetchEarthquakeData = async () => {
@@ -39,13 +38,6 @@ function App() {
 
         const data = await response.json();
         setEarthquakes(data.features);
-        setFetchedTime(
-          new Date().toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "numeric",
-            hour12: true,
-          })
-        );
       } catch (error) {
         setError(error.message);
         setEarthquakes([]);
@@ -56,25 +48,31 @@ function App() {
 
     fetchEarthquakeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refetch]);
+  }, []);
 
   return (
-    <div className="h-screen flex flex-col items-start p-4">
-      <Header
-        toggleDrawer={toggleDrawer}
-        fetchedTime={fetchedTime}
-        handleRefetch={handleRefetch}
-      />
-      {loading ? (
-        <Loader />
-      ) : earthquakes.length != 0 ? (
-        <Map />
-      ) : (
-        <Error error={error} />
+    <div className="relative w-full h-screen overflow-hidden bg-neutral-900 text-white font-sans">
+      <FilterLayout>
+        {loading ? (
+          <Loader />
+        ) : earthquakes.length !== 0 ? (
+          <Map />
+        ) : (
+          <Error error={error} />
+        )}
+      </FilterLayout>
+
+      <div className="absolute inset-0 z-30 pointer-events-none">
+        <FilterCornersUI />
+      </div>
+
+      {selectedEarthquake && (
+        <EQModalNew
+          quake={selectedEarthquake}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
       )}
-      <FilterDrawer drawer={drawer} toggleDrawer={toggleDrawer} />
     </div>
   );
 }
-
-export default App;
