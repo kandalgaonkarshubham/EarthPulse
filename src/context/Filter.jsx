@@ -57,20 +57,25 @@ export const FilterProvider = ({ children }) => {
     }
   }, []);
 
-  // ── screen width, updated on resize ──────────────────────────────────────
-  const [screenWidth, setScreenWidth] = useState(
-    typeof window !== 'undefined' ? window.innerWidth : 1440
-  );
+  // ── screen dimensions, updated on resize ────────────────────────────────
+  const [screenSize, setScreenSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1440,
+    height: typeof window !== 'undefined' ? window.innerHeight : 812
+  });
+
   useEffect(() => {
-    const onResize = () => setScreenWidth(window.innerWidth);
+    const onResize = () => setScreenSize({
+      width: window.innerWidth,
+      height: window.innerHeight
+    });
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
   // ── Dynamic zoom threshold ────────────────────────────────────────────────
   const FUDGE = 0;
-  const arcScreenX  = (495 / 1440) * screenWidth;
-  const globeRadius = screenWidth / 2 - arcScreenX;
+  const arcScreenX  = (495 / 1440) * screenSize.width;
+  const globeRadius = screenSize.width / 2 - arcScreenX;
   const ZOOM_THRESHOLD = Math.log2((globeRadius * 2 * Math.PI) / 256) + FUDGE;
 
   const zoomProgress = mapZoom >= ZOOM_THRESHOLD ? 1 : 0;
@@ -189,6 +194,9 @@ export const FilterProvider = ({ children }) => {
         setUserLocation,
         apex,
         setApex,
+        screenWidth: screenSize.width,
+        screenHeight: screenSize.height,
+        screenSize,
         filteredEarthquakes,
         currentIndex,
         setCurrentIndex,

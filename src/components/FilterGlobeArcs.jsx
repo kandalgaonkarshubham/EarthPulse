@@ -92,19 +92,40 @@ export function interpolateApex(_width) {
 }
 
 // ---------------------------------------------------------------------------
-// Hug shift — how far the main arc translates toward its edge (local SVG units).
-// Parent-space target: left → x=24, right → x=1416 (24px viewBox padding).
-// Local shift = target_parent_x - (startX + SVG_offset_x)
-//   left:  24   - (225 + 270) = -471
-//   right: 1416 - (675 + 270) =  471
-//
-// IMPORTANT: main arcs are rendered OUTSIDE the clipPath group so the
-// translation is never clipped. Secondary arcs stay inside clipPath.
+// Dynamic Hug shift — how far the main arc translates toward its edge (local SVG units).
 // ---------------------------------------------------------------------------
-// Single source of truth — change EDGE_PADDING here and dots + lines both update.
-export const EDGE_PADDING     =  110;  // viewBox units from each side
-export const LEFT_HUG_SHIFT  = EDGE_PADDING - 495;   // 24 - (225+270)
-export const RIGHT_HUG_SHIFT = (1440 - EDGE_PADDING) - 945; // (1440-24) - (675+270)
+export const EDGE_PADDING = 110;
+export const CURVED_EDGE_PADDING = 70;
+
+export function getDynamicHugShifts(screenWidth, screenHeight, apex) {
+  const scale = screenHeight / 812;
+  const svgLeftEdge = 720 - (screenWidth / 2) / scale;
+  const svgRightEdge = 720 + (screenWidth / 2) / scale;
+
+  // 1. Target positions for 'hugged' (straight) state
+  const targetHugLeft = svgLeftEdge + EDGE_PADDING;
+  const targetHugRight = svgRightEdge - EDGE_PADDING;
+
+  // 2. Base positions (where they are naturally when transform=0)
+  // Left apex is at apex.left.middle + OFFSET.x
+  const curvedApexXLeft = (apex?.left?.middle || 0) + ARC_SVG_OFFSET.x;
+  const curvedApexXRight = (apex?.right?.middle || 899.98) + ARC_SVG_OFFSET.x;
+
+  // 3. Dynamic Shifts
+  // For the 'straight' state (t=1), we want to land exactly at targetHug
+  const hugShiftLeft  = targetHugLeft - 495; // 495 is START_X + OFFSET.x
+  const hugShiftRight = targetHugRight - 945; // 945 is START_X_RIGHT + OFFSET.x
+
+  // For the 'curved' state (t=0), we only want to shift if they would clip
+  // We use a separate padding for the curved state to keep them looking natural
+  const baseShiftLeft  = Math.max(0, (svgLeftEdge + CURVED_EDGE_PADDING) - curvedApexXLeft);
+  const baseShiftRight = Math.min(0, (svgRightEdge - CURVED_EDGE_PADDING) - curvedApexXRight);
+
+  return { hugShiftLeft, hugShiftRight, baseShiftLeft, baseShiftRight };
+}
+
+export const LEFT_HUG_SHIFT  = EDGE_PADDING - 495;
+export const RIGHT_HUG_SHIFT = (1440 - EDGE_PADDING) - 945;
 
 // ---------------------------------------------------------------------------
 // useSpringT — smoothly animates toward a binary target (0 or 1) via rAF spring.
@@ -158,7 +179,11 @@ export default function GlobeArcs({
   isRightActive = false,
   activeLeftYs = [],
   activeRightYs = [],
-  enabledTiers = ["middle", "inner", "outer"]
+  enabledTiers = ["middle", "inner", "outer"],
+  leftHugShift = LEFT_HUG_SHIFT,
+  rightHugShift = RIGHT_HUG_SHIFT,
+  leftBaseShift = 0,
+  rightBaseShift = 0
 }) {
   const apex = FIXED_APEX;
   const t = useSpringT(zoomProgress);
@@ -241,7 +266,9 @@ export default function GlobeArcs({
         const apexX       = apex[side].middle;
         const apexY       = (startY + endY) / 2;
         const morphedApexX = lerp(apexX, startX, t);
-        const shift        = side === "left" ? lerp(0, LEFT_HUG_SHIFT, t) : lerp(0, RIGHT_HUG_SHIFT, t);
+        const shift        = side === "left"
+          ? lerp(leftBaseShift, leftHugShift, t)
+          : lerp(rightBaseShift, rightHugShift, t);
         const d            = makeArcPath(startX, startY, morphedApexX, apexY, endX, endY);
         return (
           <g key={id} transform={`translate(${shift}, 0)`}>

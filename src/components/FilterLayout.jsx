@@ -1,4 +1,4 @@
-import GlobeArcs from "./FilterGlobeArcs";
+import GlobeArcs, { getDynamicHugShifts } from "./FilterGlobeArcs";
 import FiltersLeft from "./FiltersLeft";
 import FiltersRight from "./FiltersRight";
 import { useFilterContext } from "@/context/Filter";
@@ -8,8 +8,9 @@ export default function FilterLayout({ children }) {
     selectedTimeRange, 
     selectedFilters, 
     zoomProgress, 
-    apex, 
-    setApex 
+    setApex,
+    screenWidth,
+    screenHeight
   } = useFilterContext();
   
   const isLeftActive = !!selectedTimeRange && selectedTimeRange !== "all";
@@ -28,11 +29,18 @@ export default function FilterLayout({ children }) {
       })
     : [];
 
+  const { 
+    hugShiftLeft, 
+    hugShiftRight, 
+    baseShiftLeft, 
+    baseShiftRight 
+  } = getDynamicHugShifts(screenWidth, screenHeight);
+
   return (
     <div className="fixed inset-0 w-full h-full overflow-hidden">
       {/* 1. Deep Background Layer (z-0) — Decorative arcs hidden behind the Earth sphere */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <svg viewBox="0 0 1440 812" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 1440 812" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
           <GlobeArcs
              onApexChange={setApex}
              zoomProgress={zoomProgress}
@@ -52,7 +60,7 @@ export default function FilterLayout({ children }) {
         <svg
           viewBox="0 0 1440 812"
           className="absolute inset-0 w-full h-full pointer-events-none"
-          preserveAspectRatio="xMidYMid meet"
+          preserveAspectRatio="xMidYMid slice"
           aria-hidden="true"
         >
           <defs>
@@ -73,14 +81,18 @@ export default function FilterLayout({ children }) {
             activeLeftYs={activeLeftYs ? [activeLeftYs] : []}
             activeRightYs={activeRightYs}
             enabledTiers={["middle"]}
+            leftHugShift={hugShiftLeft}
+            rightHugShift={hugShiftRight}
+            leftBaseShift={baseShiftLeft}
+            rightBaseShift={baseShiftRight}
           />
 
           <g className="pointer-events-auto">
-            <FiltersLeft />
+            <FiltersLeft leftHugShift={hugShiftLeft} leftBaseShift={baseShiftLeft} />
           </g>
 
           <g className="pointer-events-auto">
-            <FiltersRight />
+            <FiltersRight rightHugShift={hugShiftRight} rightBaseShift={baseShiftRight} />
           </g>
         </svg>
       </div>

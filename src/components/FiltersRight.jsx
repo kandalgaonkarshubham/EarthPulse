@@ -71,8 +71,15 @@ const CATEGORIES = [
 const [, , , START_X, START_Y, END_X, END_Y] = ARC_DEFS[1];
 const APEX_Y = (START_Y + END_Y) / 2;
 
-export default function FiltersRight() {
-  const { selectedFilters, setSelectedFilters, apex, zoomProgress = 0 } = useFilterContext();
+export default function FiltersRight({ rightHugShift = RIGHT_HUG_SHIFT, rightBaseShift = 0 }) {
+  const { 
+    selectedFilters, 
+    setSelectedFilters, 
+    apex, 
+    zoomProgress = 0,
+    screenWidth,
+    screenHeight
+  } = useFilterContext();
   const [popupCategory, setPopupCategory] = useState(null);
 
   // Same spring as GlobeArcs — dots stay locked to the arc at every frame
@@ -99,11 +106,11 @@ export default function FiltersRight() {
 
       const dotX     = lerp(curvedPt.x, straightX, t) + ARC_SVG_OFFSET.x;
       const dotY     = lerp(curvedPt.y, straightY, t) + ARC_SVG_OFFSET.y;
-      const hugShift = lerp(0, RIGHT_HUG_SHIFT, t);
+      const hugShift = lerp(rightBaseShift, rightHugShift, t);
 
       return { ...cat, ...FILTER_DATA[cat.key], x: dotX + hugShift, y: dotY };
     });
-  }, [apex, t]);
+  }, [apex, t, rightHugShift, rightBaseShift]);
 
   const handleOptionClick = (category, value) => {
     setSelectedFilters((prev) => ({
@@ -160,12 +167,15 @@ export default function FiltersRight() {
             </g>
 
             {isPopupOpen && (() => {
+              const scale = screenHeight / 812;
+              const svgRightEdge = 720 + (screenWidth / 2) / scale;
+
               const popupWidth = 140;
               const popupHeight = marker.options.length * 40 + 8;
 
               // Calculate horizontal position
               let popupX = marker.x + 80;
-              if (popupX + popupWidth > 1430) { // 1440 - 10 margin
+              if (popupX + popupWidth > svgRightEdge - 10) { 
                 // Flip to left side if it would go off-screen
                 popupX = marker.x - popupWidth - 40;
               }

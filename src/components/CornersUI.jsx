@@ -2,12 +2,12 @@ import { Settings, Moon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useFilterContext } from "@/context/Filter";
 
 export default function FilterCornersUI() {
-  const { 
+  const {
     selectedTimeRange,
     selectedFilters,
-    resetFilters, 
-    location, 
-    hemisphere, 
+    resetFilters,
+    location,
+    hemisphere,
     filterCount,
     filteredEarthquakes,
     currentIndex,
@@ -32,7 +32,7 @@ export default function FilterCornersUI() {
 
       {/* ── Top-left / Mobile: Location ── */}
       <div className="px-6 md:m-10 md:row-start-1 md:col-start-1 md:self-start md:justify-self-start pointer-events-auto">
-        <div 
+        <div
           className="glass-card rounded-[20px] px-5 py-2 flex items-center justify-center"
         >
           <span className="text-xs font-normal leading-none uppercase tracking-widest text-white/70">
@@ -43,13 +43,12 @@ export default function FilterCornersUI() {
 
       {/* ── Top-right / Mobile: Hemisphere ── */}
       <div className="px-6 md:m-10 md:row-start-1 md:col-start-3 md:self-start md:justify-self-end pointer-events-auto">
-        <div 
+        <div
           className="glass-card rounded-[20px] px-5 py-2 flex items-center gap-3 justify-center"
         >
           <span className="text-xs font-normal uppercase tracking-widest text-white/70">
             {hemisphere}
           </span>
-          <Moon color="white" opacity={0.6} strokeWidth={1.33} size={16} />
         </div>
       </div>
 
@@ -62,12 +61,12 @@ export default function FilterCornersUI() {
             className="glass-card rounded-[20px] px-5 py-2 flex items-center gap-3 justify-center cursor-pointer group transition-all duration-300 animate-in fade-in slide-in-from-bottom-2"
             onClick={resetFilters}
           >
-            <Settings 
-              className="group-hover:rotate-90 transition-transform duration-500" 
-              color="white" 
-              opacity={0.6} 
-              strokeWidth={1.33} 
-              size={16} 
+            <Settings
+              className="group-hover:rotate-90 transition-transform duration-500"
+              color="white"
+              opacity={0.6}
+              strokeWidth={1.33}
+              size={16}
             />
             <span className="text-[13px] font-normal text-white/60 group-hover:text-white transition-colors">
               Clear Filters

@@ -16,7 +16,7 @@ const TIME_MARKERS = [
 const [, , , START_X, START_Y, END_X, END_Y] = ARC_DEFS[0];
 const APEX_Y = (START_Y + END_Y) / 2;
 
-export default function FiltersLeft() {
+export default function FiltersLeft({ leftHugShift = LEFT_HUG_SHIFT, leftBaseShift = 0 }) {
   const { selectedTimeRange, setSelectedTimeRange, apex, zoomProgress = 0 } = useFilterContext();
   // Same spring as GlobeArcs — dots stay locked to the arc at every frame
   const t = useSpringT(zoomProgress);
@@ -41,11 +41,11 @@ export default function FiltersLeft() {
 
       const dotX     = lerp(curvedPt.x, straightX, t) + ARC_SVG_OFFSET.x;
       const dotY     = lerp(curvedPt.y, straightY, t) + ARC_SVG_OFFSET.y;
-      const hugShift = lerp(0, LEFT_HUG_SHIFT, t);
+      const hugShift = lerp(leftBaseShift, leftHugShift, t);
 
       return { ...m, x: dotX + hugShift, y: dotY };
     });
-  }, [apex, t]);
+  }, [apex, t, leftHugShift, leftBaseShift]);
 
   return (
     <>
