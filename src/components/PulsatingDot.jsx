@@ -48,7 +48,7 @@ function WaveRipple() {
       <div className="wave-ring" />
       <div className="wave-ring" />
       <div
-        className="w-[10px] h-[10px] rounded-full bg-rose-600 z-10"
+        className="size-[10px] rounded-full bg-rose-600 z-10"
         style={{ boxShadow: "0 0 14px 3px oklch(58.6% 0.253 17.585)" }}
       />
     </div>
@@ -57,15 +57,10 @@ function WaveRipple() {
 
 export default function PulsatingDot({ variant = "minor" }) {
   const map = {
-    minor:     <SonarSweep />,
+    minor: <SonarSweep />,
     moderate: <Heartbeat />,
-    strong:    <Beacon />,
-    severe:      <WaveRipple />,
+    strong: <Beacon />,
+    severe: <WaveRipple />,
   };
-
-  return (
-    <>
-      {map[variant] ?? null}
-    </>
-  );
+  return map[variant] ?? <></>;
 }

@@ -171,7 +171,7 @@ export default function Map() {
 
           const root = createRoot(el);
           if (isCluster) {
-            root.render(<Cluster value={feature.properties.point_count} />);
+            root.render(<Cluster number={feature.properties.point_count} />);
           } else {
             const mag = feature.properties.mag;
             let variant = "minor";

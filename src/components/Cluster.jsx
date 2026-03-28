@@ -1,54 +1,100 @@
-export default function Cluster({ value = 0 }) {
-  const low = 30;
-  const mid = 70;
+function getRings() {
+  return [
+    { radius: 38, count: 6, shape: "diamond", size: 4, opacity: 0.5, color: "hsl(10 80% 60%)" },
+    { radius: 56, count: 12, shape: "dot", size: 3, opacity: 0.7, color: "hsl(10 80% 60%)" },
+    { radius: 75, count: 12, shape: "teardrop", size: 7, offset: 15, opacity: 0.5, color: "hsl(10 80% 60%)" },
+    { radius: 95, count: 18, shape: "dot", size: 1.5, opacity: 0.3, color: "hsl(10 80% 60%)" },
+  ];
+}
 
-  let config = {};
+function renderShape(ring, ri, i, angle, rad, cx, cy) {
+  const key = `${ri}-${i}`;
+  const fg = ring.color;
 
-  switch (true) {
-    case value <= low:
-      config = {
-        shadow: "hsl(192.5 100% 23.5%",
-        bg: "bg-[hsl(192.5,100%,23.5%)]",
-        scale: 1.6,
-        size: "size-6",
-      };
-      break;
+  switch (ring.shape) {
+    case "dot":
+      return <circle key={key} cx={cx} cy={cy} r={ring.size} fill={fg} opacity={ring.opacity ?? 0.8} />;
 
-    case value <= mid:
-      config = {
-        shadow: "hsl(266.6 86.4% 40.4%",
-        bg: "bg-[hsl(266.6,86.4%,40.4%)]",
-        scale: 2,
-        size: "size-8",
-      };
-      break;
+    case "diamond":
+      return (
+        <polygon
+          key={key}
+          points={`${cx},${cy - ring.size} ${cx + ring.size * 0.5},${cy} ${cx},${cy + ring.size} ${cx - ring.size * 0.5},${cy}`}
+          fill={fg}
+          opacity={ring.opacity ?? 0.7}
+          transform={`rotate(${angle} ${cx} ${cy})`}
+        />
+      );
 
-    case value > mid:
-      config = {
-        shadow: "hsl(340.4 100% 32.4%",
-        bg: "bg-[hsl(340.4,100%,32.4%)]",
-        scale: 2.4,
-        size: "size-10",
-      };
+    case "teardrop": {
+      const s = ring.size;
+      return (
+        <ellipse
+          key={key}
+          cx={cx}
+          cy={cy}
+          rx={s * 0.45}
+          ry={s}
+          fill={fg}
+          opacity={ring.opacity ?? 0.6}
+          transform={`rotate(${angle} ${cx} ${cy})`}
+        />
+      );
+    }
+
+    default:
+      return null;
   }
+}
+
+const SeismicMandala = ({ number }) => {
+  const rings = getRings();
 
   return (
-    <div
-      className="relative flex items-center justify-center"
-      style={{
-        "--glow-color-low": `${config.shadow} / 0.3)`,
-        "--glow-color-high": `${config.shadow} / 0.5)`,
-        "--scale-peak": config.scale,
-      }}
-    >
-      <div
-        className={`breathe-glow absolute ${config.size} rounded-full ${config.bg} blur-[18px]`}
-      />
-      <div
-        className={`breathe-dot ${config.size} rounded-full ${config.bg} cursor-pointer flex items-center justify-center text-xs text-black`}
-      >
-        {value}
+    <div className="flex flex-col items-center group">
+      <div className="relative w-20 h-20 flex items-center justify-center">
+        <svg viewBox="-110 -110 220 220" className="w-full h-full">
+          {rings.map((ring, ri) => {
+            const elements = [];
+
+            for (let i = 0; i < ring.count; i++) {
+              const angle = (360 / ring.count) * i + (ring.offset || 0);
+              const rad = (angle * Math.PI) / 180;
+              const cx = Math.cos(rad) * ring.radius;
+              const cy = Math.sin(rad) * ring.radius;
+
+              elements.push(renderShape(ring, ri, i, angle, rad, cx, cy));
+            }
+
+            const direction = ri % 2 === 0 ? 1 : -1;
+            const rotateAmount = (ri + 1) * 3 * direction;
+            const scaleAmount = 1 + (ri + 1) * 0.015;
+
+            return (
+              <g key={ri}>
+                <g
+                  className="transition-transform duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]
+                            group-hover:[transform:rotate(var(--rotate))_scale(var(--scale))]"
+                  style={{
+                    "--rotate": `${rotateAmount}deg`,
+                    "--scale": scaleAmount,
+                    transformBox: "fill-box",
+                    transformOrigin: "center",
+                  }}
+                >
+                  {elements}
+                </g>
+              </g>
+            );
+          })}
+        </svg>
+
+        <span className="absolute text-xl font-bold tracking-tight text-white/90 drop-shadow-md">
+          {number}
+        </span>
       </div>
     </div>
   );
-}
+};
+
+export default SeismicMandala;
